@@ -1,0 +1,17 @@
+# Secrets — never commit
+.env
+.env.*
+*.key
+
+# Render output / intermediates
+renders/
+work/
+tmp/
+scratch/
+*.log
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+*.swp
