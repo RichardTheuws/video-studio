@@ -1,17 +1,20 @@
 #!/usr/bin/env bash
-# install.sh — install Video Studio as a Claude Code skill.
-# Copies the skill into ~/.claude/skills/video-studio/ (user-level, available in every project).
+# install.sh — manual install of Video Studio as a Claude Code skill.
+# (Prefer the plugin: /plugin marketplace add RichardTheuws/video-studio → /plugin install video-studio@theuws-video)
+# This copies the skill into ~/.claude/skills/video-studio/ (user-level, available in every project).
 set -euo pipefail
 
 DEST="${1:-$HOME/.claude/skills/video-studio}"
-SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/skills/video-studio"
+
+if [ ! -f "$SRC/SKILL.md" ]; then
+  echo "✗ Can't find the skill at $SRC — run this from the repo root." >&2
+  exit 1
+fi
 
 echo "🎬  Installing Video Studio → $DEST"
 mkdir -p "$DEST"
-# copy the skill payload (not git/readme/license bloat)
-for item in SKILL.md CHANGELOG.md reference scripts; do
-  [ -e "$SRC/$item" ] && cp -R "$SRC/$item" "$DEST/"
-done
+cp -R "$SRC/." "$DEST/"
 chmod +x "$DEST/scripts/"*.sh 2>/dev/null || true
 
 echo "✓ Installed."
