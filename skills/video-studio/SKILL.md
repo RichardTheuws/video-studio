@@ -33,6 +33,9 @@ Preflight checks the *tooling*; intake checks the *job*. Never skip it — a wro
 
 > Gate output: a mini-brief + (adopted/created) brand canon + storyboard decision + keyframe plan. Only then proceed to mode selection.
 
+## 0.6 One video or a series? (sets the order of work)
+Do you have to deliver **more than one** related deliverable — a feature series, a campaign with social cutdowns, a long-form film with embedded teasers, or the same video in N languages? Then switch to **series mode**. The quality bar doesn't change; the *order* does: **storyboard the whole set first → prove the hardest move with one PoC → produce the rest in parallel from one proven, idempotent template.** This scales "one video in a few hours" to "five videos + a long-form, three languages, in one session" without lowering the bar. A single standalone video → stay in the normal flow. Full recipe (series storyboard + sign-off, PoC gate, deterministic capture rig, parallel fan-out, fan-out discipline): **`reference/series-production.md`**.
+
 ## 1. Which mode?
 
 | Question | Mode |
@@ -88,6 +91,7 @@ This skill must grow. On **every** run:
 - `scripts/doctor.sh` — friendly one-time "is my machine ready?" onboarding check.
 - `scripts/preflight.sh` — per-job tooling/keys check, mode-aware, exit≠0 if something required is missing.
 - `reference/brand-intake.md` — **the intake gate**: brand adopt-or-create, leader/outro, lines-you-never-cross, storyboard format + sign-off, keyframe plan.
+- `reference/series-production.md` — **series / campaign mode** (§0.6): series storyboard + sign-off for the whole set, PoC gate before fan-out, deterministic capture rig, one template → parallel fan-out, fan-out discipline.
 - `reference/tooling.md` — every tool + install/check commands + keys.
 - `reference/models.md` — model registry (image + image-to-video + audio) with costs/params/when.
 - `reference/consistency.md` — consistent image production (anchor reference, text-less + lettering, custom LoRA, Flux biases).

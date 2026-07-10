@@ -2,6 +2,16 @@
 
 Format: [SemVer](https://semver.org). Newest on top.
 
+## 1.1.0 — 2026-07-10
+- **New capability layer: series / campaign production** (`reference/series-production.md` + SKILL §0.6 + Files
+  list). Scales the single-film flow to a set of related deliverables without lowering the bar. Five steps:
+  (1) storyboard the whole series with one sign-off — the long-form embeds the teasers, a fixed beat structure
+  per episode; (2) PoC gate — prove the hardest/signature move once before fan-out; (3) deterministic capture
+  rig — reproducible "real footage" from a live product (Playwright + mock data, target-format viewports,
+  `settle()`); (4) one idempotent template → parallel fan-out (variable swap per episode/language as tracked
+  background tasks); (5) fan-out discipline (validate before you multiply, pre-delivery per output, source
+  hygiene per language, cost scales too).
+
 ## 1.0.0 — 2026-07-09
 First public release. A Claude Code skill for end-to-end video production & editing, driven from chat.
 
