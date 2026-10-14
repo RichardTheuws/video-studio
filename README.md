@@ -11,13 +11,13 @@
 </p>
 
 <p align="center">
-  <a href="https://theuws.com/video-studio/"><img src="assets/demo.gif" alt="Video Studio demo" width="720"></a>
-  <br><em>▶️ <a href="https://theuws.com/video-studio/">Watch the full walkthrough &amp; two example films</a> — the studio explaining itself, and a 90-second case study, both made by this skill.</em>
+  <a href="https://theuws.com/video-studio-skill/"><img src="assets/demo.gif" alt="Video Studio demo" width="720"></a>
+  <br><em>▶️ <a href="https://theuws.com/video-studio-skill/">Watch the full walkthrough &amp; two example films</a> — the studio explaining itself, and a 90-second case study, both made by this skill.</em>
 </p>
 
 <p align="center">
   <img src="assets/demo-case.gif" alt="Full-AI case study — a game trailer made with the studio" width="720">
-  <br><em>A 90-second case study, made end-to-end by the skill — including a full AI-generated trailer (keyframe → image-to-video → montage). <a href="https://theuws.com/video-studio/">See it →</a></em>
+  <br><em>A 90-second case study, made end-to-end by the skill — including a full AI-generated trailer (keyframe → image-to-video → montage). <a href="https://theuws.com/video-studio-skill/">See it →</a></em>
 </p>
 
 ---
@@ -91,8 +91,9 @@ The **doctor** (`skills/video-studio/scripts/doctor.sh`) checks all of this for 
 |---|------|-----|---------|
 | **Core** | `ffmpeg` · `jq` · `curl` | montage, transcode, grading, audio | `brew install ffmpeg jq` |
 | **Full‑AI** | `nano-banana` (Bun + Gemini) | consistent keyframes / stills | see `reference/tooling.md` |
-| | `ImageMagick` | heavy titles & lettering | `brew install imagemagick` |
-| | `FAL_AI_KEY` | image‑to‑video (Veo / Kling) | [fal.ai](https://fal.ai) |
+| | `FAL_AI_KEY` | image‑to‑video (Kling v3) | [fal.ai](https://fal.ai) |
+| **Titles** | `node` ≥ 22 (HyperFrames via `npx`, pinned) | the title layer: one composition for 9:16 + 16:9 | `brew install node` |
+| | `ImageMagick` + `pango` | text *in* the world (perspective on a surface) + fallback titles | `brew install imagemagick pango` |
 | **Footage** | `yt-dlp` | *only* to pull clips from URLs | `brew install yt-dlp` |
 
 Primary platform: **macOS**. Most of it is portable to Linux (swap `brew` for your package manager).
@@ -117,6 +118,14 @@ Deep‑dive playbooks live in [`reference/`](skills/video-studio/reference/):
 - [`montage-ffmpeg.md`](skills/video-studio/reference/montage-ffmpeg.md) — montage recipes + hard‑won ffmpeg gotchas
 - [`existing-footage.md`](skills/video-studio/reference/existing-footage.md) — probe, download, subject auto‑select, trim/concat/grade
 - [`landscape-from-vertical.md`](skills/video-studio/reference/landscape-from-vertical.md) — reframe 9:16 ↔ 16:9 without stretching
+- [`titles-hyperframes.md`](skills/video-studio/reference/titles-hyperframes.md) — **the title layer**: one HTML composition for 9:16 + 16:9, words that build, rendered as one transparent overlay ([`templates/titles/`](skills/video-studio/templates/titles/))
+- [`directing.md`](skills/video-studio/reference/directing.md) — direction & rhythm: shot grammar fixed before generation, cut lengths, measurable QA (+ `scripts/pick-window.sh`)
+- [`title-sequence.md`](skills/video-studio/reference/title-sequence.md) — a brand leader / title sequence: text in the world, one visible cut
+- [`storyboard-keyframes.md`](skills/video-studio/reference/storyboard-keyframes.md) — a visual keyframe board as the cheap gate before image‑to‑video (+ `scripts/storyboard.sh`)
+- [`vertical-916.md`](skills/video-studio/reference/vertical-916.md) — a real 9:16 master, never a squashed or blurred 16:9
+- [`series-production.md`](skills/video-studio/reference/series-production.md) — one film → a series or campaign, from one proven template
+- [`scroll-video.md`](skills/video-studio/reference/scroll-video.md) — a film the visitor plays by scrolling
+- [`print-on-product.md`](skills/video-studio/reference/print-on-product.md) — a print on a product that reads as real, measured not guessed
 - [`lessons.md`](skills/video-studio/reference/lessons.md) — a running log of production lessons
 
 ## The quality bar (the part most tools skip)
@@ -142,4 +151,4 @@ Issues and PRs welcome — new montage recipes, model updates, platform ports, b
 
 ---
 
-<sub>Built by <a href="https://theuws.com">Theuws Consulting</a>. Born from a game trailer that came out so good it became a studio — <a href="https://theuws.com/video-studio/">the story</a>.</sub>
+<sub>Built by <a href="https://theuws.com">Theuws Consulting</a>. Born from a game trailer that came out so good it became a studio — <a href="https://theuws.com/video-studio-skill/">the story</a>.</sub>

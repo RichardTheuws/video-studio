@@ -5,17 +5,17 @@
     "email": "richard@theuws.com"
   },
   "description": "Video production tooling for Claude Code, by Theuws Consulting.",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "plugins": [
     {
       "name": "video-studio",
       "source": "./",
       "description": "Turn one idea into a finished, on-brand film — from chat. Edit existing footage or generate full-AI cinematics, with a brand & storyboard intake gate and a premium quality bar.",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "author": {
         "name": "Richard Theuws"
       },
-      "homepage": "https://theuws.com/video-studio/",
+      "homepage": "https://theuws.com/video-studio-skill/",
       "repository": "https://github.com/RichardTheuws/video-studio",
       "license": "MIT"
     }

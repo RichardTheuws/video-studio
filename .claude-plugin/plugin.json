@@ -1,12 +1,12 @@
 {
   "name": "video-studio",
   "description": "Turn one idea into a finished, on-brand film — from chat. Two modes (edit existing footage or full-AI keyframe-first image-to-video), a brand & storyboard intake gate, and a premium quality bar.",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "author": {
     "name": "Richard Theuws",
     "email": "richard@theuws.com"
   },
-  "homepage": "https://theuws.com/video-studio/",
+  "homepage": "https://theuws.com/video-studio-skill/",
   "repository": "https://github.com/RichardTheuws/video-studio",
   "license": "MIT"
 }

@@ -28,6 +28,49 @@ Pull at minimum and record:
 
 **No guide exists? → CREATE (after approval).** Propose a minimal guide (colors + type + logo usage + tone), present it in the A/B/C form for real choices, and save it as `brand-kits/<brand>/brand.md` + assets. Don't build production on a guessed brand identity.
 
+## 2.5 Naming a style: two layers (a name for the client, technique for the model)
+
+Taken from a teardown of the Okay Spielberg tool. This is a **practice choice**, not measured model
+behaviour — the three claims from that teardown that *could* be measured were tested the same day and
+didn't hold (`lessons.md`). This one stands on its own grounds.
+
+**The rule: a brand name, studio name, film title or artist name never goes into the prompt.**
+Talk to the client in names ("the look of a 90s anime"), but send the model a **technique
+description**. Two layers, then, and the translation happens before generation.
+
+Why:
+- **Liability.** A client delivery whose production prompt says "in the style of <studio>" is a
+  document you don't want to show anyone. The technique description is neutral and defensible.
+- **Providers block or water down names** — and they fail silently: you don't get a refusal, you
+  get a generic look. If you don't know that failure mode, you'll look for the cause in the wrong place.
+- **Reproducible and steerable.** A name is a black box that means something different per model; a
+  technique description can be tuned, reused and recorded in the brand canon.
+
+**How to build such a description** — cover every one of these explicitly, or the model falls back
+to generic: drawing/render technique (cel, digital paint, 3D, photographic), line quality (heavy
+outline, no outline, brush stroke), palette **with real colors** ("rust, muted cyan, warm ochre with a
+neon accent"), lighting approach (flat cel, noir contrast, soft diffuse), proportions and facial
+stylisation, background technique and level of detail, texture (grain, watercolor bleed, halftone) and
+the feel of motion (on twos, fluid).
+
+**Hard gate: never fall back to the bare style name.** If your technique description is too thin
+(rule of thumb: less than one dense paragraph), stop — don't generate with the name as an emergency
+measure. That's exactly the degradation you can't see in the output but can in the quality. Okay
+Spielberg throws a hard error here; that's the right reflex.
+
+**With imagery of real people: keep sensitive props out of the *style* description.** No smoking,
+alcohol or weapons in the style text — that text also gets applied to photos of real people (possibly
+minors) and has to pass the image generator's safety check. Carry the look entirely through render
+technique, grade, light, composition and texture. The same mechanism once got a Veo prompt blocked on
+the word "child" (`lessons.md`): the **prompt** is screened separately, even when the image is harmless.
+
+**Same rule for music.** Replace a composer's name in a music prompt with 2–3 sentences about
+instrumentation, harmonic language, rhythm and emotional register. That fits the existing floor
+(`models.md`, Audio): an instrumental bed/underscore is fine, something that reads as a real pop song is not.
+
+**Record it**: a brand's technique description belongs in `brand-kits/<brand>/brand.md`, next to colors
+and type. It's part of the canon, not something you reinvent per video.
+
 ## 3. Leader + outro (per brand, reusable)
 Each brand gets one **branded bracket**: a leader (intro) and outro that recur on *every* video — no per-video improvisation.
 - Build once per `commercial-craft.md` (heavy titles with backing, brand grade, brand music tone).

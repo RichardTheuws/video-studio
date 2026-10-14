@@ -9,8 +9,11 @@ This is the floor: **the quality Video Studio must ALWAYS deliver.** Every video
 2. **External / other-brand material = always an element WITHIN your context**, never loose shots dumped in. Showing someone else's footage (a trailer, a game, clips)? Frame it as *your* brand presenting something — framed, with your text around it. (Common failure: loose vignettes as filler.)
 3. **Enough text/narration to actually explain the story** — calm and clear, including **over embedded segments** (explain *why* you show something; introduce a trailer/insert properly before you play it). Too few lines = the viewer doesn't get it. (Common failure: too sparse, no intro on the trailer.)
 4. **A real arc that lands on the message**, not on "cool image": setup → the thing → what it means (the payoff must land on *your* point/brand, not on the borrowed material).
+5. **NEVER Ken Burns / zoompan — nowhere, on nothing.** Panning/zooming a still or a capture reads as PowerPoint, not film. If a still has to move, the motion comes from one of two sources, in this order:
+   - **A real photo (a scene with natural elements)** → **art-directed i2v** that brings one real element to life (water ripples, ornamental grasses/plumes sway, clouds/light drift). Prompt a **locked-off / static camera** and explicitly forbid `zoom/pan/push-in/drift` — otherwise the model adds camera motion anyway. i2v is cheap (~$0.56/clip on Kling v3 Pro, 5 s; see `models.md`) and reusable across every video for that brand. **Curate**: compare first vs. last frame — identical framing = camera locked (good); grown/zoomed-in = rejected, re-roll or fall back to static.
+   - **A UI screenshot, text strip, letterbox collage or any other composite *without* a natural element** → **a static hold**; i2v morphs a screen/composition strangely (Veo stretches letterbox bars, hallucinates content). The **crafted cross-dissolves + heavy titles + grade** supply the motion. Static is the premium choice here, not a compromise.
 
-Test every delivery against these 4 before the premium test. Falls below this level → rebuild, don't ship.
+Test every delivery against these 5 before the premium test. Falls below this level → rebuild, don't ship.
 
 ## The premium test (does it feel paid-for)
 Ask on every render: *would a high-end brand pay for this?* If not, check:
@@ -57,6 +60,7 @@ Thin text on moving footage reads "thin" and cheap. Premium titles are **heavy, 
 5. **Type system**: max 2 families (display + sans), consistent positions (lower-third left, hero center), consistent in/out animation. One system = expensive; loose styles = amateurish.
 6. **Legibility test**: place the title on the **busiest/brightest frame** of its shot. Illegible there = heavier backing or reposition.
 
+**Canonical route: the HyperFrames title layer** (`titles-hyperframes.md`): one transparent MOV rendered from a brand template, 9:16 and 16:9 from one source, words that build up, one overlay. The PNG route below is the fallback.
 **ffmpeg (no `drawtext` in brew-ffmpeg)** → render text as a PNG with **ImageMagick** (real fonts + glow/plate), overlay with `-loop 1 -framerate 30 -i title.png` + `format=rgba,fade=...:alpha=1`. Scrim: a separate gradient PNG or `drawbox` with low alpha under the text PNG. Plate: rounded `roundrectangle` (IM) in a brand color + gold hairline, text on top, as one PNG.
 
 ---
@@ -113,8 +117,8 @@ Detect and decide deliberately: **burned-in subtitles**, **watermark/logo**, **a
 
 ---
 
-## 8. The real bar — cinematic hero shots (and how to hit it)
-The videos represent professional capability; amateur work costs collaborations. The bar is a film studio, not "neat motion graphics". Concrete failure lessons (learned in production, don't repeat):
+## 8. The real bar — Hollywood / Pixar / Marvel (and how to hit it)
+The videos represent professional capability; amateur work costs collaborations. The bar is **Hollywood / Pixar / Marvel**, not "neat motion graphics". Concrete failure lessons (learned in production, don't repeat):
 
 1. **Wrong register = an instant fail.** Flat 2D motion graphics (fading-in bars, a drawn line, ticking digits) are not a hero moment. A hero/growth/impact shot is **cinematic 3D/VFX**: low hero camera, volumetric light/god-rays, depth, reflections, particles, lens flare, weight. **"We build with AI"** — use nano-banana + i2v for the image, not ffmpeg shapes.
 2. **Motion MUST be art-directed.** A loose i2v prompt ("animate this") makes the model **spin the subject on its axis** instead of the intended motion. Direct explicitly: **camera move** (push-in / crane-up) + **object physics** (grows, erupts, accelerates, with weight) + **what crosses the lens plane** (debris/sparks along the lens). Negative-prompt against `rotating/spinning/orbiting/twisting/drift`.

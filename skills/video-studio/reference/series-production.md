@@ -23,7 +23,7 @@ Before anything is built: one **series storyboard** that treats the whole set as
   from (or vice versa: the teasers are the export moments out of the long-form). So one storyboard delivers
   both the series *and* the long film, with shared beats.
 - **A fixed beat structure per episode** — lock one skeleton every episode fills in, so fan-out becomes
-  mechanical. Example (a 16s teaser): `leader 3s → hook → detail → subtitle → outro 4s`, cuts masked with a
+  mechanical. Example (a 16s teaser): `leader 3s → hook 3.8s → detail 3.2s → subtitle 2s → outro 4s`, cuts masked with a
   shared sting. Only the copy + capture choreography differ per episode.
 - **One row per episode** in the storyboard (same format as `brand-intake.md` §5), plus a header table that
   records the shared constants (bracket, grade, music, loudness, aspect ratios, languages).

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en" data-composition-variables='[
+  {"id":"spec","type":"string","label":"Title spec (JSON: duration + items)","default":"{\"duration\":4,\"items\":[{\"kind\":\"plate\",\"in\":0.3,\"out\":3.7,\"text\":\"A short prompt only works when there is a *memory* behind it.\",\"glow\":2}]}"}
+]'>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <!-- Landscape entry (1920×1080). Content + timing via --variables-file (spec); layout in titles.css; logic in titles.js. -->
+    <script src="vendor/gsap.min.js"></script>
+    <link rel="stylesheet" href="titles.css" />
+    <style>html, body, #root { width: 1920px; height: 1080px; }</style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="4" data-width="1920" data-height="1080"></div>
+    <script src="titles.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = window.buildTitles();
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+      document.fonts.ready.then(window.fitTitles);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,60 @@
+/* video-studio — title layer (HyperFrames, transparent overlay). Default = the Theuws Consulting house style; per brand,
+   spec.brand overrides the tokens below (titles.js sets them as CSS variables on #root).
+   One stylesheet for 9:16 and 16:9: titles.js puts .portrait or .landscape on #root. */
+@font-face { font-family: "Fraunces"; src: url("fonts/Fraunces.ttf") format("truetype"); font-weight: 100 900; }
+@font-face { font-family: "JetBrains Mono"; src: url("fonts/JetBrainsMono.ttf") format("truetype"); font-weight: 100 800; }
+@font-face { font-family: "Inter Display"; src: url("fonts/InterDisplay-SemiBold.otf") format("opentype"); font-weight: 600; }
+@font-face { font-family: "Inter Display"; src: url("fonts/InterDisplay-Bold.otf") format("opentype"); font-weight: 700; }
+
+:root { --font-head: "Fraunces"; --font-ui: "Inter Display"; --font-mono: "JetBrains Mono";
+  --plate: rgba(15,76,74,0.86); --teal: #0F4C4A; --amber: #D97A2C; --glow: #E8913F; --paper: #FBF8F3; --ink: #1F2B2A; --muted: #6B7A78; --sage: #B9CFCB; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { overflow: hidden; background: transparent; }
+#root { position: relative; overflow: hidden; }
+.w { display: inline-block; }
+
+/* ── cards (full frame, paper) ── */
+.card { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center;
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(255,255,255,0) 40%, rgba(60,45,30,0.22) 100%),
+    var(--paper); }
+.kicker { font: 600 26px/1.2 var(--font-ui); letter-spacing: 0.2em; color: var(--sage); }
+.card .kicker { color: var(--muted); }
+.head { font: 900 84px/1.02 var(--font-head); color: var(--teal); margin: 14px 0 44px; text-wrap: balance; }
+.head b { color: var(--amber); }
+.panel { background: rgba(255,255,255,0.96); border-left: 10px solid var(--teal); border-radius: 22px;
+  box-shadow: 0 14px 60px rgba(30,20,10,0.35); padding: 48px 56px; }
+.code { font: 400 34px/1.42 var(--font-mono); color: var(--ink); }
+.code .pw { position: relative; }
+.code .cur { position: absolute; left: 100%; color: var(--teal); }
+.count { display: flex; align-items: baseline; gap: 18px; margin-top: 56px; }
+.count .n { font: 900 160px/1 var(--font-head); color: var(--amber); font-variant-numeric: tabular-nums; }
+.count .lbl { font: 700 44px/1 var(--font-ui); color: var(--teal); }
+.foot { margin-top: 48px; }
+.foot .rule { width: 170px; border: 0; border-top: 4px solid var(--teal); margin-bottom: 36px; }
+.foot p { font: 700 42px/1.25 var(--font-ui); color: var(--ink); }
+.foot p + p { color: var(--teal); margin-top: 18px; }
+
+/* ── plates (teal glass) ── */
+.plate { position: absolute; background: var(--plate); border-radius: 26px;
+  box-shadow: 0 12px 70px rgba(0,0,0,0.55); padding: 52px 62px; }
+.plate .title { font: 900 68px/1.08 var(--font-head); color: var(--paper); text-wrap: balance; }
+.plate .title.small { font-size: 60px; }
+.plate .quote { font: 700 46px/1.3 var(--font-mono); color: var(--paper); margin: 10px 0 34px; text-wrap: balance; }
+.plate hr { border: 0; border-top: 2px solid rgba(185,207,203,0.35); margin: 0 0 30px; }
+
+/* ── 9:16: plates in the upper band (safe zone), full width ── */
+.portrait .card { padding: 0 90px; }
+.portrait .plate { left: 70px; right: 70px; top: 250px; }
+
+/* ── 16:9: plates in the left third, cards in two columns ──
+   Never centre with transform: GSAP animates transform. Use inset + margin:auto + height:fit-content. */
+.landscape .plate { left: 90px; width: 820px; top: 0; bottom: 60px; margin: auto 0; height: fit-content; }
+.landscape .plate .title { font-size: 58px; } .landscape .plate .title.small { font-size: 50px; }
+.landscape .plate .quote { font-size: 40px; }
+.landscape .card { display: grid; grid-template-columns: 640px 1fr; column-gap: 90px; align-content: center; padding: 0 140px; }
+.landscape .card > :not(.panel) { grid-column: 1; }
+.landscape .card > .panel { grid-column: 2; grid-row: 1 / span 4; align-self: center; }
+.landscape .card.nopanel { grid-template-columns: 1fr; }
+.landscape .code { font-size: 30px; }
+.landscape .count .n { font-size: 140px; }

@@ -49,6 +49,38 @@ have ffprobe && row ffprobe 0 1 || row ffprobe 1 1 "comes with ffmpeg"
 have jq      && row jq 0 1      || row jq 1 1 "brew install jq"
 have curl    && row curl 0 1    || row curl 1 1 "system curl missing?!"
 
+# Title layer via HyperFrames (canonical, see reference/titles-hyperframes.md).
+# Needs Node >= 22; if an older node comes first in PATH, put a newer one ahead of it.
+echo "Title layer (HyperFrames):"
+NODE_MAJOR=$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0)
+[ "$NODE_MAJOR" -ge 22 ] && row "node>=22" 0 1 "$(node -v)" || row "node>=22" 1 1 "node $(node -v 2>/dev/null || echo missing) in PATH; brew install node (and put it ahead of any older node in PATH)"
+SKILL_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+HFV=$(grep -oE '^HF_VERSION="[0-9.]+"' "$SKILL_DIR/scripts/render-titles.sh" | cut -d'"' -f2)
+if [ "$NODE_MAJOR" -ge 22 ] && [ "$(HYPERFRAMES_NO_TELEMETRY=1 npx --yes "hyperframes@$HFV" --version 2>/dev/null | tail -1)" = "$HFV" ]; then
+  row hyperframes 0 1 "v$HFV (npx, pinned)"
+else
+  row hyperframes 1 1 "npx --yes hyperframes@$HFV --version (needs network the first time)"
+fi
+ls "$SKILL_DIR"/templates/titles/shared/fonts/*.?tf >/dev/null 2>&1 && row "title-template" 0 1 "templates/titles (fonts + GSAP bundled)" || row "title-template" 1 1 "templates/titles/shared/fonts missing — reinstall the skill"
+
+# Lettering / title cards — pango: fallback for the title layer + text-in-the-world (perspective on a surface).
+# Canonical text render: REAL pango (pango-view) → PNG → composite with ImageMagick.
+# NB: Homebrew ImageMagick has no pango/fontconfig delegate → use pango-view, not `pango:`.
+# PARITY: if you render on a second machine/server, it needs exactly these tools + fonts, or its output drifts.
+echo "Lettering (title cards — real pango text):"
+have magick     && row magick 0 1     || row magick 1 1 "brew install imagemagick (compositing/lettering)"
+have pango-view && row pango-view 0 1 "real pango rendering (markup, variable fonts, letter-spacing)" || row pango-view 1 1 "brew install pango"
+if have fc-list; then
+  # note: `fc-list | grep -q` fails under pipefail (SIGPIPE) → match on a string instead of a pipe.
+  # The families below are the default house style; swap in your own brand fonts.
+  FCL="$(fc-list 2>/dev/null || true)"; miss_font=""; shopt -s nocasematch
+  for fam in Fraunces Inter Outfit; do [[ "$FCL" == *"$fam"* ]] || miss_font="$miss_font $fam"; done
+  shopt -u nocasematch
+  [ -z "$miss_font" ] && row "brand-fonts" 0 0 "Fraunces/Inter/Outfit found" || row "brand-fonts" 1 0 "install fonts:$miss_font (fontconfig)"
+else
+  row fontconfig 1 0 "brew install fontconfig (fc-list; lets pango find your brand fonts)"
+fi
+
 # AI mode (image-gen + i2v)
 echo "Full-AI mode (image generation + image-to-video):"
 ai_req=$([ "$MODE" = "ai" ] || [ "$MODE" = "all" ] && echo 1 || echo 0)
@@ -56,6 +88,7 @@ have nano-banana && row nano-banana 0 "$ai_req" || row nano-banana 1 "$ai_req" "
 have magick      && row magick 0 0               || row magick 1 0 "brew install imagemagick (lettering/compositing)"
 have_key FAL_AI_KEY && row FAL_AI_KEY 0 "$ai_req" "i2v + Flux/Recraft" || row FAL_AI_KEY 1 "$ai_req" "set FAL_AI_KEY in ~/.config/video-studio/.env"
 have_key ELEVENLABS_API_KEY && row ELEVENLABS 0 0 "voices/SFX" || row ELEVENLABS 1 0 "optional: ElevenLabs key"
+have_key SUNO_API_KEY && row SUNO 0 0 "music" || row SUNO 1 0 "optional: Suno key"
 
 # Existing-footage mode
 echo "Existing-footage mode (download + auto-select):"

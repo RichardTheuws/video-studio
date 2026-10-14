@@ -67,3 +67,5 @@ Switch between reframe modes with **slide/wipe/feather** so it becomes one movin
 4. Titles/overlays on landscape-safe zones; in editorial frames, use the free space.
 
 > Result: a 16:9 that feels *composed* (panning reframes, split moments, editorial frames flowing into each other) instead of a stretched or boxed vertical clip. The 9:16 stays the master; the 16:9 is its own, deliberate reframing.
+
+**The opposite direction** (a 16:9 production that also needs a real 9:16 master): see `vertical-916.md`.
