@@ -5,8 +5,8 @@
 # Client imagery goes through fal's own storage (fal-cdn), NEVER through a public host of your own.
 #
 # Use as a command:
-#   fal.sh key                              → print the key (for $(…)); looks in env → ./.env → ../.env →
-#                                             $VIDEO_STUDIO_ENV (if set) → ~/.config/video-studio/.env
+#   fal.sh key                              → print the key (for $(…)); looks in env → $VIDEO_STUDIO_ENV (explicit file) →
+#                                             ~/.config/video-studio/.env. Deliberately no ./.env: that depends on the caller's cwd.
 #   fal.sh upload <file>                    → print the fal-cdn URL (temporary storage at fal, no host of your own)
 #   fal.sh submit <endpoint> <req.json>     → print status_url and response_url (2 lines); body via file, never argv
 #   fal.sh wait <status_url> [max_s]        → block until COMPLETED (exit 1 on FAILED/timeout)
@@ -43,11 +43,11 @@ _fal_read_env() { # $1=file $2=key → value without quotes
 fal_key() {
   if [ -n "${FAL_AI_KEY:-}" ]; then printf '%s' "$FAL_AI_KEY"; return 0; fi
   local f
-  for f in ./.env ../.env "${VIDEO_STUDIO_ENV:-}" "$HOME/.config/video-studio/.env"; do
+  for f in "${VIDEO_STUDIO_ENV:-}" "$HOME/.config/video-studio/.env"; do
     [ -n "$f" ] || continue
     _fal_read_env "$f" FAL_AI_KEY && return 0
   done
-  echo "fal.sh: FAL_AI_KEY not found (env, ./.env, ../.env, \$VIDEO_STUDIO_ENV, ~/.config/video-studio/.env)" >&2
+  echo "fal.sh: FAL_AI_KEY not found (env, \$VIDEO_STUDIO_ENV, ~/.config/video-studio/.env)" >&2
   return 1
 }
 
