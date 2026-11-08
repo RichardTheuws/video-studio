@@ -12,11 +12,11 @@ ok=0; warn=0; miss_core=0; miss_titles=0; miss_ai=0; miss_footage=0
 have() { command -v "$1" >/dev/null 2>&1; }
 
 # key present in env or in an .env? Same search order as scripts/lib/fal.sh:
-# ./.env → ../.env → $VIDEO_STUDIO_ENV (if set) → ~/.config/video-studio/.env (canonical location)
+# $VIDEO_STUDIO_ENV (if set) → ~/.config/video-studio/.env (canonical location); same order as scripts/lib/fal.sh key
 have_key() {
   local k="$1" f
   [ -n "${!k:-}" ] && return 0
-  for f in ./.env ../.env "${VIDEO_STUDIO_ENV:-}" "$HOME/.config/video-studio/.env"; do
+  for f in "${VIDEO_STUDIO_ENV:-}" "$HOME/.config/video-studio/.env"; do
     [ -n "$f" ] && [ -f "$f" ] && grep -qE "^${k}=" "$f" && return 0
   done
   return 1

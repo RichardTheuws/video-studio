@@ -104,7 +104,7 @@ This skill must grow. On **every** run:
 ## Files
 - `scripts/doctor.sh` — friendly one-time "is my machine ready?" onboarding check.
 - `scripts/preflight.sh` — per-job tooling/keys check, mode-aware, exit≠0 if something required is missing; with `VIDEO_STUDIO_PEER=<ssh-host>` it also reports skill drift, ffmpeg version and node on a second render machine (warns only).
-- `scripts/lib/fal.sh` — **the one fal.ai layer**: `key` (resolver: env → `./.env` → `../.env` → `$VIDEO_STUDIO_ENV` → `~/.config/video-studio/.env`), `upload` (fal-cdn, never your own host), `submit`/`wait`/`result`/`run`/`cancel`, `price`, `delete`, `costs` (cost log per production). Privacy defaults: no request history at fal, uploads expire after 24 h, outputs after 7 days.
+- `scripts/lib/fal.sh` — **the one fal.ai layer**: `key` (resolver: env → `$VIDEO_STUDIO_ENV` → `~/.config/video-studio/.env`), `upload` (fal-cdn, never your own host), `submit`/`wait`/`result`/`run`/`cancel`, `price`, `delete`, `costs` (cost log per production). Privacy defaults: no request history at fal, uploads expire after 24 h, outputs after 7 days.
 - `scripts/qa-check.sh` — **the measurable QA gate** (§5): every threshold from `commercial-craft.md` and `directing.md` as PASS/FAIL with the rule it comes from, plus the AI-label metadata check.
 - `scripts/storyboard.sh` — generates a **visual keyframe storyboard** (stills, 3/5/2) as the cheap gate before i2v; auto-anchor for consistency, labelled board + cost line.
 - `scripts/pick-window.sh` — measures the strongest window in an i2v clip (`<clip> <sec> [--cut out.mp4]`).

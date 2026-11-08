@@ -2,10 +2,16 @@
 
 Format: [SemVer](https://semver.org). Newest on top.
 
+## 1.3.1 — 2026-11-08
+Review fixes on 1.3.0 (none of these changes the recipes):
+- `fal.sh key` no longer reads `./.env` / `../.env` (the result depended on the caller's cwd); `preflight.sh` and `doctor.sh` use the same order. A project file is passed explicitly via `$VIDEO_STUDIO_ENV`.
+- `fal.sh`: `.env` values with a trailing `# comment` are parsed correctly; `fal_wait` fails fast on an error body (`{"detail":…}`) instead of polling until the timeout.
+- `qa-check.sh`: the AI-label check matches the real marker (`AI-generated`, `Made with AI`, `AI Act`) instead of any `AI` substring; empty `--cuts` file is a FAIL; `--lufs` is honoured regardless of `--social` order; missing option values exit 2 with a message; true-peak gate is −1.0 dBTP as documented.
+
 ## 1.3.0 — 2026-11-08
 An audit release: the lessons of three months turned into gates and one library, not more prose.
 
-- **`scripts/lib/fal.sh` — the one fal.ai layer.** Key resolver (`env → ./.env → ../.env → $VIDEO_STUDIO_ENV → ~/.config/video-studio/.env`),
+- **`scripts/lib/fal.sh` — the one fal.ai layer.** Key resolver (`env → $VIDEO_STUDIO_ENV → ~/.config/video-studio/.env`; deliberately no cwd-relative `.env`),
   upload to fal's own storage (never a public host of your own — the request body goes via a file, so no more ARG_MAX
   requests without a body), `submit`/`wait`/`result`/`run`/`cancel`/`delete`, a price lookup and a cost log per production
   (`costs.jsonl`, `fal.sh costs` sums it). Privacy defaults: no request history at fal (`X-Fal-Store-IO: 0`), uploads expire

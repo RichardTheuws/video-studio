@@ -47,7 +47,7 @@ Canonical text render: **real pango rendering via `pango-view` → transparent P
 | ffmpeg | (see core) | — | scene detection (`select='gt(scene,0.4)'`), thumbnails, trim, concat |
 
 ## Keys & paths
-- **One key resolver: `scripts/lib/fal.sh key`.** Search order: `$FAL_AI_KEY` → `./.env` → `../.env` → `$VIDEO_STUDIO_ENV` (an extra file, e.g. on a headless runner) → **`~/.config/video-studio/.env`** (the canonical location, `chmod 600`). Preflight and doctor check exactly these locations. Never hard-code a path to an `.env` in a production script: in one audit, 40 scripts read the key from an unrelated project's `.env`. **Never commit, never echo.**
+- **One key resolver: `scripts/lib/fal.sh key`.** Search order: `$FAL_AI_KEY` → `$VIDEO_STUDIO_ENV` (an extra file, e.g. on a headless runner) → **`~/.config/video-studio/.env`** (the canonical location, `chmod 600`). Preflight and doctor check exactly these locations. Never hard-code a path to an `.env` in a production script: in one audit, 40 scripts read the key from an unrelated project's `.env`. **Never commit, never echo.**
 - The same file holds `ELEVENLABS_API_KEY`, `SUNO_API_KEY`, `SUNO_API_URL`.
 - The Gemini key for nano-banana lives in its own `.env` (separate from fal), set during the nano-banana skill's `/init`.
 - If your project already has a fal.ai wrapper for images (sprites/backgrounds/logos/og-images/remove-bg), reuse it rather than rebuilding one.

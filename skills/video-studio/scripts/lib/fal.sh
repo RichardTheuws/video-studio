@@ -36,7 +36,7 @@ _fal_ttl() { printf 'X-Fal-Object-Lifecycle-Preference: {"expiration_duration_se
 
 _fal_read_env() { # $1=file $2=key → value without quotes
   [ -f "$1" ] || return 1
-  local v; v=$(grep -E "^${2}=" "$1" | head -1 | cut -d= -f2- | tr -d '"'"'"' \r')
+  local v; v=$(grep -E "^${2}=" "$1" | head -1 | cut -d= -f2- | sed -E 's/[[:space:]]+#.*$//; s/^[[:space:]]+//; s/[[:space:]]+$//; s/^"(.*)"$/\1/; s/^\x27(.*)\x27$/\1/' | tr -d '\r')
   [ -n "$v" ] && printf '%s' "$v"
 }
 
@@ -95,8 +95,9 @@ fal_wait() { # <status_url> [max_s=1800] → 0 on COMPLETED
     case "$st" in
       COMPLETED) return 0;;
       FAILED|CANCELLED) echo "fal_wait: $st — $(head -c 300 <<<"$r")" >&2; return 1;;
-      "") # Flux Dev sometimes returns the result right away, without a status
-         jq -e '.images or .video or .audio_file' <<<"$r" >/dev/null 2>&1 && return 0;;
+      "") # Flux Dev sometimes returns the result right away, without a status; an error body ({"detail":…}) is a hard failure
+         jq -e '.images or .video or .audio_file' <<<"$r" >/dev/null 2>&1 && return 0
+         jq -e '.detail' <<<"$r" >/dev/null 2>&1 && { echo "fal_wait: error from fal — $(head -c 300 <<<"$r")" >&2; return 1; };;
     esac
     [ $(( $(date +%s) - t0 )) -ge "$max" ] && { echo "fal_wait: timeout after ${max}s ($st)" >&2; return 1; }
     sleep 5
@@ -164,7 +165,7 @@ fal_costs() { # [costs.jsonl]
 }
 
 # ── command mode ──────────────────────────────────────────────────────────────
-if [ "${BASH_SOURCE[0]}" = "$0" ]; then
+if [ "${BASH_SOURCE[0]:-}" = "$0" ]; then
   cmd="${1:-}"; shift || true
   case "$cmd" in
     key) fal_key;; upload) fal_upload "$@";; submit) fal_submit "$@";; wait) fal_wait "$@";;

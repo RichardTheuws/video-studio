@@ -10,11 +10,12 @@
 #   Exit 0 = every check PASS. Every FAIL names the measurement and the rule it comes from.
 set -uo pipefail
 F="${1:?usage: qa-check.sh <deliverable.mp4> [--expect s] [--cuts f] [--clips dir] [--social] [--lufs n] [--genre teaser|explainer]}"; shift
-EXPECT=""; CUTS=""; CLIPS=""; SOCIAL=0; LUFS=-16; GENRE="explainer"
+EXPECT=""; CUTS=""; CLIPS=""; SOCIAL=0; LUFS=-16; LUFS_SET=0; GENRE="explainer"
 while [ $# -gt 0 ]; do case "$1" in
-  --expect) EXPECT="$2"; shift 2;; --cuts) CUTS="$2"; shift 2;; --clips) CLIPS="$2"; shift 2;;
-  --social) SOCIAL=1; LUFS=-14; shift;; --lufs) LUFS="$2"; shift 2;; --genre) GENRE="$2"; shift 2;;
+  --expect) EXPECT="${2:?--expect needs a value}"; shift 2;; --cuts) CUTS="${2:?--cuts needs a file}"; shift 2;; --clips) CLIPS="${2:?--clips needs a dir}"; shift 2;;
+  --social) SOCIAL=1; shift;; --lufs) LUFS="${2:?--lufs needs a value}"; LUFS_SET=1; shift 2;; --genre) GENRE="${2:?--genre needs a value}"; shift 2;;
   *) echo "unknown option $1" >&2; exit 2;; esac; done
+[ "$SOCIAL" = 1 ] && [ "$LUFS_SET" = 0 ] && LUFS=-14   # --social implies −14 unless --lufs was given explicitly
 [ -f "$F" ] || { echo "ERROR: $F does not exist" >&2; exit 2; }
 fail=0; pass(){ printf '  PASS  %-18s %s\n' "$1" "$2"; }; failm(){ printf '  FAIL  %-18s %s\n' "$1" "$2"; fail=1; }
 
@@ -42,14 +43,16 @@ if ffprobe -v error -select_streams a:0 -show_entries stream=codec_type -of csv=
   EB=$(ffmpeg -v info -nostats -i "$F" -af ebur128=peak=true -f null - 2>&1 | awk '/Integrated loudness/{f=1} f&&/I:/{i=$2} /True peak:/{p=1} p&&/Peak:/{tp=$2} END{print i, tp}')
   read -r I TP <<<"$EB"
   awk -v i="$I" -v t="$LUFS" 'BEGIN{d=i-t; if(d<0)d=-d; exit !(d<=1.5)}' && pass loudness "${I} LUFS (target ${LUFS}±1.5)" || failm loudness "${I} LUFS, target ${LUFS}±1.5 — loudnorm=I=${LUFS}:TP=-1 on the MASTER, trace it back (montage-ffmpeg.md)"
-  awk -v p="$TP" 'BEGIN{exit !(p<=-0.8)}' && pass "true peak" "${TP} dBTP" || failm "true peak" "${TP} dBTP > −1 — clips on phones"
+  awk -v p="$TP" 'BEGIN{exit !(p<=-1.0)}' && pass "true peak" "${TP} dBTP" || failm "true peak" "${TP} dBTP > −1 — clips on phones"
 else failm audio "no audio track"; fi
 # 6. rhythm from the cut list (directing.md §6: mean < 3.0 s for a teaser, spread > 0.6 s)
 if [ -n "$CUTS" ] && [ -f "$CUTS" ]; then
-  read -r N M SD <<<"$(awk 'NF{s+=$1; a[++n]=$1} END{m=s/n; for(i=1;i<=n;i++) v+=(a[i]-m)^2; printf "%d %.2f %.2f", n, m, sqrt(v/n)}' "$CUTS")"
+  read -r N M SD <<<"$(awk 'NF{s+=$1; a[++n]=$1} END{if(!n){print "0 0 0"; exit} m=s/n; for(i=1;i<=n;i++) v+=(a[i]-m)^2; printf "%d %.2f %.2f", n, m, sqrt(v/n)}' "$CUTS")"
+  if [ "$N" = 0 ]; then failm "shot length" "no cut lengths in $CUTS"; else
   lim=$([ "$GENRE" = teaser ] && echo 3.0 || echo 4.0)
   awk -v m="$M" -v l="$lim" 'BEGIN{exit !(m<l)}' && pass "shot length" "$N shots, mean ${M}s (< ${lim})" || failm "shot length" "mean ${M}s ≥ ${lim} — clips used 1-to-1? (directing.md §3, pick-window.sh)"
   awk -v s="$SD" 'BEGIN{exit !(s>0.6)}' && pass spread "${SD}s (> 0.6)" || failm spread "${SD}s ≤ 0.6 — a metronome, not directing (directing.md §6)"
+  fi
 fi
 # 7. dead cuts (directing.md §2: motion energy < 0.5 = practically a still)
 if [ -n "$CLIPS" ] && [ -d "$CLIPS" ]; then dead=""
@@ -61,5 +64,5 @@ if [ -n "$CLIPS" ] && [ -d "$CLIPS" ]; then dead=""
 fi
 # 8. AI label in the metadata (EU AI Act art. 50): the visible label on the end card is a visual check; this is the machine-readable half
 CM=$(ffprobe -v error -show_entries format_tags=comment -of csv=p=0 "$F")
-case "$CM" in *AI*|*ai-generated*|*artificial*) pass "AI label" "metadata: ${CM:0:60}";; *) failm "AI label" "no AI marking in the metadata — encode with -metadata comment=\"AI-generated imagery — <brand>, EU AI Act art. 50\" (montage-ffmpeg.md)";; esac
+shopt -s nocasematch; case "$CM" in *AI-gegenereerd*|*AI-generated*|*"Made with AI"*|*"Gemaakt met AI"*|*"AI Act"*) pass "AI label" "metadata: ${CM:0:60}";; *) failm "AI label" "no AI marking in the metadata — encode with -metadata comment=\"AI-generated imagery — <brand>, EU AI Act art. 50\" (montage-ffmpeg.md)";; esac; shopt -u nocasematch
 echo "──"; [ "$fail" = 0 ] && { echo "QA: PASS"; exit 0; } || { echo "QA: FAIL — do not deliver (commercial-craft.md §7)"; exit 1; }
