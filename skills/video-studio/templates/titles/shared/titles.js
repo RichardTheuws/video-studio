@@ -8,7 +8,8 @@
 //   { "kind": "plate", "in": s, "out": s, "text": "…", "small": false, "glow": s },        // title plate
 //   { "kind": "pair",  "in": s, "out": s, "typed": "…", "knew": "…", "labels": ["A","B"] }, // two-part plate
 //   { "kind": "card",  "in": s, "out": s, "kicker": "…", "head": "…", "panel": "…",          // full-frame paper card
-//     "typewriter": 3.4, "counter": "words", "foot": ["…", "…"] } ] }
+//     "typewriter": 3.4, "counter": "words", "foot": ["…", "…"] },
+//   { "kind": "ailabel", "in": s, "out": s, "text": "Made with AI", "variant": "generated|modified|basic", "dark": false } ] }
 // Text is plain text (it gets escaped). Markup: *word* = accent (<b>), \n = line break.
 // `in`/`out` are absolute seconds; `out` = the moment the element is fully gone.
 window.buildTitles = function () {
@@ -50,6 +51,20 @@ window.buildTitles = function () {
         .to(sel, { opacity: 0, duration: f, ease: "none" }, it.out - f);
       // escalation: the accent word glows at a chosen moment (e.g. when the picture 'switches on')
       if (it.glow != null) tl.to(`${sel} b`, { color: glow, textShadow: `0 0 28px ${glow}`, duration: 0.5, ease: "power2.out" }, it.glow);
+      return;
+    }
+
+    if (it.kind === "ailabel") {
+      // EU label for AI content (Regulation 2024/1689 Art. 50; icons by the European Commission, eu-ai-label/).
+      // Small, inside the safe band, visible at first exposure or on the end card; "dark": true picks the black variant for light footage.
+      const v = it.variant === "modified" ? "ai-modified" : it.variant === "basic" ? "ai" : "ai-generated";
+      const a = el("div", `ailabel ${id}`);
+      const img = document.createElement("img"); img.src = `eu-ai-label/${v}-${it.dark ? "black" : "white"}.svg`; img.alt = "AI";
+      a.append(img); if (it.text) a.append(el("span", "", esc(it.text)));
+      if (it.dark) a.classList.add("dark");
+      root.append(a);
+      const sel = `.${id}`, f = it.fade ?? 0.3;
+      tl.set(sel, { opacity: 0 }, 0).to(sel, { opacity: 1, duration: f, ease: "none" }, it.in).to(sel, { opacity: 0, duration: f, ease: "none" }, it.out - f);
       return;
     }
 

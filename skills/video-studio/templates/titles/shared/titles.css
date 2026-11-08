@@ -58,3 +58,11 @@ html, body { overflow: hidden; background: transparent; }
 .landscape .card.nopanel { grid-template-columns: 1fr; }
 .landscape .code { font-size: 30px; }
 .landscape .count .n { font-size: 140px; }
+
+/* ── EU AI label (Art. 50): small, inside the safe band, never over a plate ── */
+.ailabel { position: absolute; display: flex; align-items: center; gap: 14px; font-family: var(--font-ui, 'Inter Display', 'Inter', sans-serif); font-weight: 600;
+  color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.5); opacity: 0; }
+.ailabel img { height: 100%; width: auto; display: block; filter: drop-shadow(0 1px 3px rgba(0,0,0,.45)); }
+.ailabel.dark { color: #111; text-shadow: none; } .ailabel.dark img { filter: none; }
+.portrait .ailabel { left: 70px; bottom: 330px; height: 56px; font-size: 26px; }
+.landscape .ailabel { right: 72px; bottom: 56px; height: 48px; font-size: 22px; }

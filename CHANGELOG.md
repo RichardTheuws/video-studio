@@ -2,6 +2,9 @@
 
 Format: [SemVer](https://semver.org). Newest on top.
 
+## 1.3.2 — 2026-11-08
+- **EU AI label in the title template.** The official European Commission icons (AI / AI GENERATED / AI MODIFIED, white and black) ship in `templates/titles/shared/eu-ai-label/`; a new `ailabel` spec item places them inside the safe band (9:16 bottom-left, 16:9 bottom-right) with a plain-language text such as "Made with AI". Required by `commercial-craft.md` §0 rule 6 (EU AI Act Art. 50).
+
 ## 1.3.1 — 2026-11-08
 Review fixes on 1.3.0 (none of these changes the recipes):
 - `fal.sh key` no longer reads `./.env` / `../.env` (the result depended on the caller's cwd); `preflight.sh` and `doctor.sh` use the same order. A project file is passed explicitly via `$VIDEO_STUDIO_ENV`.

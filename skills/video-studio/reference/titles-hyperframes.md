@@ -64,6 +64,7 @@ guide and paste it into the spec. Look at one test render per format before the 
 - `out` = the moment the element is fully gone. A card that dissolves along: `out = xfade offset + xfade duration`.
   A plate must be gone **before** a dissolve (plates double up in a dissolve, `lessons.md` 2026-10-14 II).
 - Text is **plain text** and gets escaped (`& < > ' “ ”` are safe). Markup: `*word*` = accent, `\n` = line break.
+- `{"kind":"ailabel","in":…,"out":…,"text":"Made with AI","variant":"generated|modified|basic","dark":false}` = the EU AI label (mandatory, `commercial-craft.md` §0 rule 6); 9:16 bottom of the safe band, 16:9 bottom right; `dark` for light footage. Icons: the European Commission set in `templates/titles/shared/eu-ai-label/` (free to use, do not recolour).
 - `glow` = the moment the accent word lights up amber (the escalation that couldn't be built in pango). Put it on the
   beat in the picture it refers to.
 - `pair` takes optional `labels` (two kickers, default `["YOU TYPED", "IT KNEW"]`); set them for your own copy.
