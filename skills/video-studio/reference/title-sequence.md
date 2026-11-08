@@ -348,3 +348,10 @@ artifact — hence §2 rule 5.
 - `consistency.md` — anchor reference for the morph corridor.
 - `vertical-916.md` — 9:16 is its own render.
 - Reference: *Stuart Fails to Save the Universe*, ep. 1 opening credits, HBO Max, 2026.
+
+## 12. Additions from the log (consolidated 2026-11-08)
+- §5 step 4 turned out too strict: the morph corridor need not be pixel-identical; test against DSSIM 0.38–0.43 (`consistency.md` §6, 2026-08-11).
+- §6 step 3: **set the viewport before `-distort Perspective`** — `-crop` doesn't enlarge a canvas, so the warped print falls outside the frame (a fragment top-left; 2026-08-09): `magick flat.png -virtual-pixel white -set option:distort:viewport 2752x1536+0+0 -distort Perspective "…" +repage`.
+- Textile and pull-outs, framing the carrier large enough, a composited print surviving i2v: `models.md` "What i2v cannot do" (2026-08-09).
+- Never judge a print on the last frame: a word on a doormat seemed covered, was legible for the first 1.3 s, and the boot was the intended occluder (2026-08-10).
+- Relighting is the whole difference (SSIM 0.26 → 0.63 → 0.92): `print-on-product.md`.

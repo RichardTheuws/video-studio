@@ -113,4 +113,14 @@ The arc builds up (setup → tension → payoff → identity), not loose labels.
 - [ ] Storyboard: needed? if so → made + **sign-off** before production
 - [ ] Keyframe plan (for AI): anchor chosen, one cut validated before fan-out
 
-> New lesson about intake/brand canon → append in `lessons.md` + bump `CHANGELOG.md`.
+## 7. Brand and workflow lessons from the log (consolidated 2026-11-08)
+- **Fonts are per project, not the skill default.** The families the preflight checks are whatever an earlier production installed; that they are present is not a choice. Choose per brand (after a specimen board), record it in the brand tokens + `brand/fonts/` (OFL) (2026-07-16).
+- **Ken Burns/zoompan is off by default for every brand**; only after explicit approval (`commercial-craft.md` §0.5). This was the #2 repeat mistake (2026-07-07, 07-14).
+- **Finals in one fixed place with fixed naming** per brand (`<brand>/<series>/<name>-16x9.mp4` / `-9x16.mp4`, working assets in a subfolder per subject); follow the naming already in the target folder (2026-07-07).
+- **Join the brand's existing pipeline** before you build anything new: leader→content→outro bracket, the existing card style and colours, the already-approved music bed (an electronic bed was rejected where an orchestral one was canon), real-time recordings (2026-07-07). Consume an existing brand system (style guide, tokens, EDL) as the baseline (2026-06-24).
+- **A hero tier above the canon**: if the client wants spectacle while the canon is "not loud", document a hero/brand-film tier with edge from rhythm/grade/light/speed ramps, not from cheap transitions; name the tension, don't choose silently (2026-06-24).
+- **Mono logo variants flatten a detailed emblem** into a disc: full-colour logo on a glass panel (rgba ~0.62 + a gold hairline); mono only for wordmarks (2026-06-24).
+- **Footage first**: inventory the strongest moments in the *whole* pool first (6 of 167 clips was too narrow), let them set the lines, one proof shot per claim, show the shot↔line map before render; mine the brand's own promos for voice and mapping (2026-06-28). Test message and CTA claim against reality before the build (2026-06-26).
+- **An insight from one client job enriches the skill**: the keyframe storyboard as a gate came out of a SaaS flow (break-even ~2 % conversion at ~€1/board against ~€45 margin; 2026-07-12, `storyboard-keyframes.md`).
+
+> New lesson about intake/brand canon → the rule here, one index line in `lessons.md`, bump `CHANGELOG.md`.

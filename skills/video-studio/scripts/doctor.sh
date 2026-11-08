@@ -11,12 +11,13 @@ ok=0; warn=0; miss_core=0; miss_titles=0; miss_ai=0; miss_footage=0
 
 have() { command -v "$1" >/dev/null 2>&1; }
 
-# key present in env or in an .env (config dir, cwd, parent)?
+# key present in env or in an .env? Same search order as scripts/lib/fal.sh:
+# ./.env → ../.env → $VIDEO_STUDIO_ENV (if set) → ~/.config/video-studio/.env (canonical location)
 have_key() {
-  local k="$1"
+  local k="$1" f
   [ -n "${!k:-}" ] && return 0
-  for f in "$HOME/.config/video-studio/.env" ./.env ../.env; do
-    [ -f "$f" ] && grep -qE "^${k}=" "$f" && return 0
+  for f in ./.env ../.env "${VIDEO_STUDIO_ENV:-}" "$HOME/.config/video-studio/.env"; do
+    [ -n "$f" ] && [ -f "$f" ] && grep -qE "^${k}=" "$f" && return 0
   done
   return 1
 }
@@ -74,7 +75,7 @@ echo ""
 echo "${BOLD}Full-AI mode${NC} ${DIM}(generate stills/keyframes → image-to-video)${NC}"
 have nano-banana && line nano-banana "Gemini image CLI" || { fail nano-banana "npm i -g nano-banana  (needs Bun + a Gemini API key)"; miss_ai=1; }
 have magick && line ImageMagick "$(magick -version 2>/dev/null | head -1 | awk '{print $3}')" || { fail ImageMagick "$PKG imagemagick  (heavy titles / lettering)"; miss_ai=1; }
-have_key FAL_AI_KEY && line FAL_AI_KEY "image-to-video (Kling), Flux, stable-audio" || { fail FAL_AI_KEY "set FAL_AI_KEY in ~/.config/video-studio/.env  →  https://fal.ai"; miss_ai=1; }
+have_key FAL_AI_KEY && line FAL_AI_KEY "image-to-video (Seedance / Kling), Flux, stable-audio" || { fail FAL_AI_KEY "set FAL_AI_KEY in ~/.config/video-studio/.env  →  https://fal.ai"; miss_ai=1; }
 have_key GEMINI_API_KEY && line GEMINI_API_KEY "nano-banana keyframes" || optl GEMINI_API_KEY "needed by nano-banana → https://aistudio.google.com/apikey"
 have_key ELEVENLABS_API_KEY && line ELEVENLABS_API_KEY "voices / SFX" || optl ELEVENLABS_API_KEY "voices / SFX"
 echo ""

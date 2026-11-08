@@ -2,6 +2,34 @@
 
 Format: [SemVer](https://semver.org). Newest on top.
 
+## 1.3.0 — 2026-11-08
+An audit release: the lessons of three months turned into gates and one library, not more prose.
+
+- **`scripts/lib/fal.sh` — the one fal.ai layer.** Key resolver (`env → ./.env → ../.env → $VIDEO_STUDIO_ENV → ~/.config/video-studio/.env`),
+  upload to fal's own storage (never a public host of your own — the request body goes via a file, so no more ARG_MAX
+  requests without a body), `submit`/`wait`/`result`/`run`/`cancel`/`delete`, a price lookup and a cost log per production
+  (`costs.jsonl`, `fal.sh costs` sums it). Privacy defaults: no request history at fal (`X-Fal-Store-IO: 0`), uploads expire
+  after 24 h, outputs after 7 days. Why: dozens of productions each had their own polling loop and the same bug was logged twice.
+- **`scripts/qa-check.sh` — the measurable QA gate.** Format, SAR, pix_fmt, bt709 colour tags, duration, file size, loudness /
+  true peak, shot length and spread, dead cuts, and the AI label in the metadata — each as PASS/FAIL with the rule it comes
+  from; exit ≠ 0 = don't deliver. Why: three rules that had stood in the docs for months were all failed by one delivered video.
+- **AI label is a rule** (`commercial-craft.md` §0 rule 6): "Made with AI" on the end card and
+  `-metadata comment="AI-generated imagery — <brand>, EU AI Act art. 50"` on the master. Law in the EU since August 2026, honest everywhere.
+- **Seedance 1.5 Pro is the default for single shots** (`models.md`); Kling v3 Pro stays for start+end-frame transitions
+  (measured: Seedance holds identity equally well at native 1920×1080 and roughly 40 % of the price, but its end-frame
+  transition runs and then switches hard). Kling v3 Pro is now $0.14/s.
+- **Encoder measured** (`montage-ffmpeg.md`): hardware encoding (VideoToolbox) is slower *and* worse than
+  `libx264 -preset veryfast` — KILL. Masters `-preset slow -crf 18`, previews `-preset veryfast -crf 20`.
+- **Lessons consolidated into the playbooks.** `lessons.md` is now an index (date · measurement · pointer); the rules moved
+  into thematic sections: `montage-ffmpeg` "Pitfalls from the log", `tooling` "Build gaps and shell pitfalls", `models`
+  "Measured behaviour of i2v models", `consistency` §6–7 (keyframe pitfalls, keying and alpha), `directing` §7,
+  `series-production` "Pitfalls in the capture rig", `brand-intake` §7, `commercial-craft` §9 "Measurement discipline",
+  `title-sequence` §12, `existing-footage` §7–8, `print-on-product` §8, `vertical-916` additions.
+- **Preflight**: same key search order as `fal.sh`; set `VIDEO_STUDIO_PEER=<ssh-host>` and it also reports skill drift,
+  ffmpeg version and node on a second render machine (warns, never blocks). `doctor.sh` checks the same key locations.
+- HyperFrames stays pinned at 0.8.99 (measured against 0.9.23: only anti-aliasing differs on motion frames; the pin is
+  re-tested across machines before any upgrade).
+
 ## 1.2.0 — 2026-10-14
 Three months of production, distilled. The biggest changes:
 

@@ -36,5 +36,11 @@
 ## Economics
 9:16 i2v costs about the same as 16:9 (~€0.50/clip on Veo 3 Fast) and is **reusable across every video for that brand** (asset library). Titles/cards are script work (near €0). For **real-asset builds** the 9:16 is therefore cheap; only full-AI hero shots carry real extra generation cost.
 
+## Additions from the log (consolidated 2026-11-08)
+- **A vertical leader from a 16:9 style frame**: don't centre it on a flat canvas (a small band in empty space). Fill the height: wordmark above, tagline/handle below, or a real 9:16 card (2026-07-10).
+- **A fixed-width app**: "render at mobile width" does not mean 1080 wide — a 390 px prototype stretches to tablet width. Viewport at its own width in 9:16 (390×693) at `deviceScaleFactor 3` → 1170×2079 → scale to 1080×1920; the bottom falls out of frame just like a real phone recording (2026-07-31).
+- **9:16 from a 3D rig**: raise the FOV (55 → 78; equal coverage would need ~117° and distorts) and pull the camera end points of interior dives back along the view direction, computed as −(look − pos) (2026-07-20). Own 9:16 renders anchored on portrait frames; cropping a 16:9 interior cuts the composition apart.
+- 9:16 keyframes that come back rotated 90° and 16:9 reframes from 9:16: `consistency.md` §6.
+
 ## See also
 `landscape-from-vertical.md` — the reframe toolkit for the opposite direction (9:16 source → 16:9). A 608×1080 → 1080×1920 crop-and-scale is the same idea inverted.

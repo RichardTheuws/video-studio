@@ -50,3 +50,11 @@ Missing shots? Fill in with AI keyframes → i2v (mode B), and edit them between
 
 ## 6. Finish
 Montage + audio via `montage-ffmpeg.md`. Deliver in the right aspect for the destination + a poster frame.
+
+## 7. Source hygiene: HDR and orientation (consolidated 2026-11-08)
+- Probe per source `color_space,color_transfer,color_primaries,pix_fmt` and `stream_side_data=rotation`. `bt2020`/`smpte2084`/`arib-std-b67`/`*10le` = HDR → tonemap only those sources (recipe in `montage-ffmpeg.md` "Colour"; needs `ffmpeg-full`). Running an SDR source through the tonemap washes it out (2026-06-26). Rotation tag −90 = a vertical source (2026-06-25).
+- Watermark, burned-in subs, existing titles, an already-graded look, letterbox, shaky/dark: detect and decide deliberately (`commercial-craft.md` §7).
+
+## 8. Reference analysis (reverse-engineering an existing film)
+- `select='gt(scene,0.0)',metadata=print:file=-` → sort by score. A top score of 0.44 with the rest ≤ 0.22 = one real cut, everything else is masked — the key question when rebuilding an edit (2026-08-09).
+- Old sites via the Wayback Machine: early captures are often bare HTML without the stylesheet — don't show that as "what it looked like". Use the **calendar view** (`/web/<year>0101000000*/<domain>`) and hover to the first capture day, `if_` URLs without the toolbar for styled pages, `document.body.style.zoom` for a narrow site in 16:9 (2026-11-03). Real archive footage often sits on the client's YouTube channel: search the Wayback for `youtube.com/(embed|v)/<id>` and pull the channel with `yt-dlp --flat-playlist`; 480p framed on paper with the year, never blown up.

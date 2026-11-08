@@ -70,4 +70,9 @@ So: approve the frame on print-area light first, then composite. The other way r
 
 - `title-sequence.md` §6 — never generate hero text (this document is the image counterpart of that rule).
 - `commercial-craft.md` §7 — pre-delivery inspection; never judge a print on a single frame.
-- `lessons.md` — the individual technical traps (ImageMagick without a default font, `read`+`identify`, alpha loss under an opaque texture layer, PIL dropping alpha, cut-out color bleed).
+- `lessons.md` — the index of measurements; the technical traps live in `tooling.md` (ImageMagick without a default font, `read`+`identify`, PIL dropping alpha) and `consistency.md` §7 (alpha loss under an opaque texture layer, cut-out colour bleed).
+
+## 8. Measurement and compositing pitfalls (consolidated from the log, 2026-11-08)
+- The ladder that justifies the model (a merchandise leader, 2026-08-10): warp + multiplying a blurred grey value **SSIM 0.26** against ground truth; artwork × the target's light field **0.63**; log domain + robust polynomial fit + alpha-from-deviation **0.92**.
+- An opaque layer over the ink layer wrecks the alpha and darkens the next composite frame; restore with `CopyOpacity` and measure outside the print area. Cutting out from white: erode the mask ~2 px. PIL: `convert("RGBA")`, never `"RGB"` (`consistency.md` §7, `tooling.md`).
+- A logo on a moving AI-generated bag without OpenCV: NCC point tracking (`fftconvolve`) on high-pass luma + a thin-plate mapping per frame (`RBFInterpolator`), light = frame / median fabric albedo. Works on still and falling bags; **fails** on simultaneous zoom and heavy cloth motion (jumps of 60 px) — no logo there. Occluders (lanyard, badge) as a mask before the print (2026-10-16). Look at a text logo SVG as a PNG first: a clipped viewBox showed a truncated wordmark on every bag.

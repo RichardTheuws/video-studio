@@ -8,6 +8,8 @@
 #   preflight.sh ai         # require full-AI mode (image-gen + i2v)
 #   preflight.sh footage    # require existing-footage mode
 #   preflight.sh all        # require everything
+# Env:  VIDEO_STUDIO_ENV=<file>       extra .env to search for keys (e.g. on a headless runner)
+#       VIDEO_STUDIO_PEER=<ssh-host>  also report skill/tool drift against a second render machine (warns only)
 # Exit: 0 = all tools required for the mode are present; 1 = something required is missing.
 
 set -uo pipefail
@@ -17,14 +19,19 @@ missing_required=0
 
 have() { command -v "$1" >/dev/null 2>&1; }
 
-# key present in env or in an .env (config dir, cwd, parent)?
+# key present in env or in an .env? Same search order as scripts/lib/fal.sh:
+# ./.env → ../.env → $VIDEO_STUDIO_ENV (if set) → ~/.config/video-studio/.env (canonical location)
 have_key() {
-  local k="$1"
+  local k="$1" f
   [ -n "${!k:-}" ] && return 0
-  for f in "$HOME/.config/video-studio/.env" ./.env ../.env; do
-    [ -f "$f" ] && grep -qE "^${k}=" "$f" && return 0
+  for f in ./.env ../.env "${VIDEO_STUDIO_ENV:-}" "$HOME/.config/video-studio/.env"; do
+    [ -n "$f" ] && [ -f "$f" ] && grep -qE "^${k}=" "$f" && return 0
   done
   return 1
+}
+
+prow() { # parity: $1=label $2=ok(0/1) $3=text — warns, never blocks
+  if [ "$2" -eq 0 ]; then printf "  ${GRN}✓${NC} %-14s ${DIM}%s${NC}\n" "$1" "$3"; else printf "  ${YEL}⚠ %-14s DRIFT${NC} → %s\n" "$1" "$3"; fi
 }
 
 row() { # $1=label $2=ok(0/1) $3=req-for-this-mode(0/1) $4=hint
@@ -86,7 +93,7 @@ echo "Full-AI mode (image generation + image-to-video):"
 ai_req=$([ "$MODE" = "ai" ] || [ "$MODE" = "all" ] && echo 1 || echo 0)
 have nano-banana && row nano-banana 0 "$ai_req" || row nano-banana 1 "$ai_req" "install nano-banana (Bun + Gemini key)"
 have magick      && row magick 0 0               || row magick 1 0 "brew install imagemagick (lettering/compositing)"
-have_key FAL_AI_KEY && row FAL_AI_KEY 0 "$ai_req" "i2v + Flux/Recraft" || row FAL_AI_KEY 1 "$ai_req" "set FAL_AI_KEY in ~/.config/video-studio/.env"
+have_key FAL_AI_KEY && row FAL_AI_KEY 0 "$ai_req" "i2v + Flux/Recraft" || row FAL_AI_KEY 1 "$ai_req" "set FAL_AI_KEY in ~/.config/video-studio/.env (resolver: scripts/lib/fal.sh key)"
 have_key ELEVENLABS_API_KEY && row ELEVENLABS 0 0 "voices/SFX" || row ELEVENLABS 1 0 "optional: ElevenLabs key"
 have_key SUNO_API_KEY && row SUNO 0 0 "music" || row SUNO 1 0 "optional: Suno key"
 
@@ -95,6 +102,22 @@ echo "Existing-footage mode (download + auto-select):"
 ft_req=$([ "$MODE" = "footage" ] || [ "$MODE" = "all" ] && echo 1 || echo 0)
 have yt-dlp && row yt-dlp 0 0 "only needed to download from a URL" || row yt-dlp 1 0 "brew install yt-dlp (URL sources only)"
 have ffmpeg && row "scene-detect" 0 "$ft_req" "ffmpeg select=scene + thumbnails" || row "scene-detect" 1 "$ft_req" "ffmpeg required"
+
+# Parity with a second render machine (optional). Set VIDEO_STUDIO_PEER=<ssh-host> if a server renders the same skill
+# headless: the skill must be in sync after every change and the tool versions must match — drift is not theoretical
+# (a peer once produced a blurred-fill 9:16 because two reference docs had not been synced). Warns, never blocks.
+if [ -n "${VIDEO_STUDIO_PEER:-}" ] && ssh -o ConnectTimeout=3 -o BatchMode=yes "$VIDEO_STUDIO_PEER" true 2>/dev/null; then
+  PEER_SKILL="${VIDEO_STUDIO_PEER_SKILL_DIR:-.claude/skills/video-studio}"
+  echo "Parity with ${VIDEO_STUDIO_PEER}:"
+  if have rsync; then
+    DRIFT=$(rsync -aic --delete --exclude .DS_Store --dry-run "$SKILL_DIR/" "$VIDEO_STUDIO_PEER:$PEER_SKILL/" 2>/dev/null | grep -vc '^\.d\.\.t')
+    [ "${DRIFT:-0}" -eq 0 ] && prow "skill-sync" 0 "peer skill in parity" || prow "skill-sync" 1 "$DRIFT file(s) differ → sync the skill to $VIDEO_STUDIO_PEER:$PEER_SKILL before a client production"
+  fi
+  LV=$(ffmpeg -version 2>/dev/null | head -1 | awk '{print $3}'); RV=$(ssh "$VIDEO_STUDIO_PEER" 'export PATH=/opt/homebrew/bin:/usr/local/bin:$PATH; ffmpeg -version | head -1' 2>/dev/null | awk '{print $3}')
+  [ "$LV" = "$RV" ] && prow "ffmpeg-version" 0 "$LV on both" || prow "ffmpeg-version" 1 "local $LV ≠ peer ${RV:-?} — align them (brew upgrade ffmpeg) before a client production"
+  RN=$(ssh "$VIDEO_STUDIO_PEER" 'export PATH=/opt/homebrew/opt/node/bin:/opt/homebrew/bin:/usr/local/bin:$PATH; node -v' 2>/dev/null)
+  RNM=$(echo "${RN#v}" | cut -d. -f1); [ "${RNM:-0}" -ge 22 ] 2>/dev/null && prow "peer-node>=22" 0 "$RN" || prow "peer-node>=22" 1 "${RN:-unknown} — put a node ≥ 22 first in the peer's PATH"
+fi
 
 echo "─────────────────────────────────────────────────────────────────"
 if [ "$missing_required" -eq 1 ]; then

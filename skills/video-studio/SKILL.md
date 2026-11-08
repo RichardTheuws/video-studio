@@ -61,7 +61,7 @@ This is intake step 5. For any video with a creative/narrative layer (titles, tr
 Short: inventory → (download) → **extract frames and visually inspect to select by subject** → trim/concat/grade → montage. Auto-select leans on your own multimodal read: pull thumbnails with ffmpeg, **read them**, pick the matching segments. Full recipe + commands: **`reference/existing-footage.md`**.
 
 ## 3. Mode B — Full-AI (consistent image production → video)
-Short: **keyframe-first**. Generate a start-frame per shot where subject + environment are already correct (nano-banana/Flux, with a reference anchor for consistency), then animate *that* frame with image-to-video (fal.ai Kling v3 Pro; Veo is shut down on 2026-10-25). Never blind text-to-video. Models/costs/params: **`reference/models.md`**. Consistency techniques (anchor reference, text-less + separate lettering, custom LoRA): **`reference/consistency.md`**.
+Short: **keyframe-first**. Generate a start-frame per shot where subject + environment are already correct (nano-banana/Flux, with a reference anchor for consistency), then animate *that* frame with image-to-video (fal.ai: Seedance 1.5 Pro for single shots, Kling v3 Pro for start+end-frame transitions; Veo was shut down on 2026-10-25). Never blind text-to-video. Models/costs/params: **`reference/models.md`**. Consistency techniques (anchor reference, text-less + separate lettering, custom LoRA): **`reference/consistency.md`**.
 
 **Is the deliverable a leader / title sequence / brand intro (20–35s)?** There is a worked-out form that reads premium and is cheap: **`reference/title-sequence.md`** — text-in-the-world + a straight camera move, four maskings so the whole sequence has **one** visible cut, and the occluder trick that turns one generation into several beats.
 
@@ -72,6 +72,7 @@ A string of technically correct shots is not yet a film. **Before you generate a
 
 ## 4. Montage & audio (both modes)
 ffmpeg montage with proven gotchas (decoupled muxing, synth SFX, `font=Impact`, the zsh `${var}[label]` trap, FX on black + `blend=screen`): **`reference/montage-ffmpeg.md`**. Run long fal jobs as **tracked background tasks**; never assume "looks done" — inspect frames.
+Every fal call (i2v, audio, upload) goes through **`scripts/lib/fal.sh`** — one key resolver, upload to fal-cdn (never a public host of your own), submit/wait/result with the known retries, and a cost line per call in `costs.jsonl` (`fal.sh costs` sums it for the report).
 
 ## 5. Quality bar — commercial/premium (REQUIRED)
 Read **`reference/commercial-craft.md`** before every commercial video. That's the bar that makes work feel paid-for. **The bottom line** (§0 there): every video clears the reference standard — brand ownership (leader+outro+brand wrap), external material as element-in-your-context, enough text to explain the story (including over embedded pieces), and an arc that lands on the message. Below that → rebuild, don't ship. The default mistakes you NEVER make:
@@ -81,26 +82,30 @@ Read **`reference/commercial-craft.md`** before every commercial video. That's t
 4. **No slideshow** — clips placed 1-to-1 at full i2v length is the most common failure mode. Check before delivery: **average shot length < 3.0 s** for teaser/comedy, **spread > 0.6 s**, at least 3 different shot sizes, and every requested action actually visible (`reference/directing.md` §6).
 Plus: **hero breathes**, **cut on beat/motion**, **hook in the first 1.5s**, audio loudnorm+duck. Never end on "technically works" — test against the premium bar and the QA checklist in `commercial-craft.md`.
 
+**First the measurable gate: `scripts/qa-check.sh <deliverable> --expect <s> [--social] [--cuts cutlengths.txt] [--clips clips/]`** — format, SAR, pix_fmt, bt709 colour tags, duration, file size, loudness/true peak, shot length/spread, dead cuts, AI label in the metadata. Exit ≠ 0 = don't deliver. Then the eye:
 **REQUIRED before delivery — Pre-delivery inspection (`commercial-craft.md` §7):** a moving medium is NEVER judged on stray thumbnails. View a dense frame-strip (≤0.7s), the out-frame of A next to the in-frame of B per cut, hold/legibility of cards, and source hygiene (subs/watermark/grade). And validate one cut before fanning out to languages/variants. Skipping this was the #1 failure source.
 
 - **Consistency above all**: character/style identical across all shots (anchor reference; keyframe-first).
 - **Always really inspect**: pull frames and look; never trust "completed" alone.
 - **No placeholder as final**: canvas/generated, no emoji.
-- **Cost-aware**: report estimated/actual cost of paid generation briefly and factually — and say where the money went (it sits in i2v generation, not in montage or captures).
+- **Cost-aware**: every report/making-of contains the real API cost from the cost log (`scripts/lib/fal.sh costs` in the production folder) plus the image-generation line, and explains when it gets more or less expensive (the money sits in i2v, not in montage or captures). A report without a cost line is not finished.
+- **AI label**: every video with AI imagery or audio carries "Made with AI" on the end card and `-metadata comment="AI-generated imagery — <brand>, EU AI Act art. 50"` on the master (`commercial-craft.md` §0 rule 6; `qa-check.sh` checks it).
 
 ## 6. Self-maintenance (continuously — required)
 This skill must grow. On **every** run:
 1. **Before**: run preflight (§0). A new capability gap → ask + (after approval) install.
 2. **During/after**: the moment you learn something — a working workaround, a broken/new model, a price change, a tool that breaks another tool, a better prompt technique — **record it immediately**:
-   - New lesson/gotcha → append in **`reference/lessons.md`** (with date + a 1-line why).
+   - New lesson/gotcha → the rule in the thematic document (`montage-ffmpeg`, `models`, `consistency`, `directing`, `series-production`, `tooling`, `commercial-craft` §9, `brand-intake` §7, …), then **one** index line in **`reference/lessons.md`** (date · measurement · pointer).
    - Changed model/price/endpoint → update **`reference/models.md`**.
-   - New/changed tool or install step → update **`reference/tooling.md`** + `scripts/preflight.sh` + `scripts/doctor.sh`.
+   - New/changed tool or install step → update **`reference/tooling.md`** + `scripts/preflight.sh` + `scripts/doctor.sh`. A new measurable threshold → `scripts/qa-check.sh`.
    - Bump **`CHANGELOG.md`** (date + 1 line).
 3. **In doubt whether the skill is still correct** (last review > ~1 month ago, or a model/price feels stale): say so and propose a quick verification (1 test call) before building on the old assumption.
 
 ## Files
 - `scripts/doctor.sh` — friendly one-time "is my machine ready?" onboarding check.
-- `scripts/preflight.sh` — per-job tooling/keys check, mode-aware, exit≠0 if something required is missing.
+- `scripts/preflight.sh` — per-job tooling/keys check, mode-aware, exit≠0 if something required is missing; with `VIDEO_STUDIO_PEER=<ssh-host>` it also reports skill drift, ffmpeg version and node on a second render machine (warns only).
+- `scripts/lib/fal.sh` — **the one fal.ai layer**: `key` (resolver: env → `./.env` → `../.env` → `$VIDEO_STUDIO_ENV` → `~/.config/video-studio/.env`), `upload` (fal-cdn, never your own host), `submit`/`wait`/`result`/`run`/`cancel`, `price`, `delete`, `costs` (cost log per production). Privacy defaults: no request history at fal, uploads expire after 24 h, outputs after 7 days.
+- `scripts/qa-check.sh` — **the measurable QA gate** (§5): every threshold from `commercial-craft.md` and `directing.md` as PASS/FAIL with the rule it comes from, plus the AI-label metadata check.
 - `scripts/storyboard.sh` — generates a **visual keyframe storyboard** (stills, 3/5/2) as the cheap gate before i2v; auto-anchor for consistency, labelled board + cost line.
 - `scripts/pick-window.sh` — measures the strongest window in an i2v clip (`<clip> <sec> [--cut out.mp4]`).
 - `scripts/render-titles.sh` — renders the HyperFrames title layer as a transparent ProRes 4444 MOV, with a QA gate on alpha + duration.
@@ -121,5 +126,5 @@ This skill must grow. On **every** run:
 - `reference/scroll-video.md` — **scroll-driven film** (mode C): all-intra encode (every frame a keyframe) + verification, blob preload, damping/dead-zone scrubber, and the camera method (portal-chaining, occluder joins, luminance arc, a reserved text zone). Contains the only allowed exception to **NEVER Ken Burns / locked-off camera**.
 - `reference/existing-footage.md` — existing video: probe, download, subject auto-select, trim/concat/grade.
 - `reference/print-on-product.md` — **putting a real print/logo on a product** (merchandise, textiles, promo): the albedo × light model, the measured method (log domain, robust polynomial fit, alpha from deviation: SSIM 0.26 → 0.92 against ground truth), the cross-validation setup, and why virtual-try-on models collapse on film footage. Read this before any video where a printed item is the hero.
-- `reference/lessons.md` — running log of production lessons (append-only).
+- `reference/lessons.md` — the **index** of production lessons: one line per lesson (date · measurement · pointer); the rules themselves live in the thematic documents.
 - `CHANGELOG.md` (repo root) — maintenance history of this skill.

@@ -132,6 +132,8 @@ run-up doesn't win.
 
 ## 6. QA — measurable, before delivery
 
+Automated: `scripts/qa-check.sh <film.mp4> --cuts cutlengths.txt --clips clips/ --genre teaser` measures the thresholds below plus colour tags, size and loudness. The awk line stays for one-off measurements.
+
 ```bash
 # mean shot length + spread from your edit list
 awk '{s+=$1; a[NR]=$1} END{m=s/NR; for(i in a) v+=(a[i]-m)^2;
@@ -144,3 +146,13 @@ awk '{s+=$1; a[NR]=$1} END{m=s/NR; for(i in a) v+=(a[i]-m)^2;
   within one location.
 - **Every requested action is actually visible.** Walk the shot list against the picture; a
   shot in which the action didn't happen is a *re-render*, not "good enough".
+
+## 7. Additions from the log (consolidated 2026-11-08)
+- **Late action**: Kling v3 often performs the requested jump only in the last ~0.7 s; a 6-frame strip missed it, 8 frames per draw always saw it (2026-10-14). Judge "action missing" only on a strip that samples the last quarter densely.
+- **Screen recordings are measured differently**: the 0.5 threshold on YAVG comes from i2v; on UI over a light background a scroll/cursor changes only a few percent, 7 of 14 beats looked still during 41 actions (2026-09-22). Use the **longest contiguous still interval** (YAVG < 0.15) and test against ~3.5 s. That measurement exposed that every beat ended with 3.5–5.0 s of standstill (the `sleep` in the capture script) = slideshow; let the edit find the last motion and end ~0.8 s later.
+- **A film without voice** has holds ≥ 4 s per card; a 4.0 s card with xfade in/out is effectively 2.6 s — count the fades (2026-08-26).
+- **Text cards ≤ ~25 % of the runtime** (one promo sat at ~28 %; 2026-06-26). A lower-third on a site capture that already shows the headline is double text: drop it (2026-07-10).
+- **A screen you cannot read is decoration**: a 390×844 capture at 90–94 % frame height in 16:9 gives UI text of ~16 px. Scale the device beyond the frame (h ≈ 1.35× in a split beat, 1.55× solo) and let it run off the bottom: ~1.7× more legible (2026-07-31).
+- **An "AI impression" label goes before the wipe peak**: in a spark wipe 0.35–1.60 s the render is recognisable at ~30 %; chip at ~0.45 s (full at 0.75 s), the explanatory lower-third only after the reveal (2026-07-20).
+- **Never a plan hold as a linear micro-pan** (reads as a still next to a lead-in that ends on the same position): a slow orbit arc with push-in (r 760→590, height 2060→1880, ~25°; 2026-07-20). An explode move lifts layers *above* the end camera (3400/4300/5200 cm with a camera at 2000), easing `t^2.1`.
+- **A cumulative list across cuts**: no fades between the steps (it flickers; 2026-10-14).

@@ -13,7 +13,9 @@ This is the floor: **the quality Video Studio must ALWAYS deliver.** Every video
    - **A real photo (a scene with natural elements)** → **art-directed i2v** that brings one real element to life (water ripples, ornamental grasses/plumes sway, clouds/light drift). Prompt a **locked-off / static camera** and explicitly forbid `zoom/pan/push-in/drift` — otherwise the model adds camera motion anyway. i2v is cheap (~$0.56/clip on Kling v3 Pro, 5 s; see `models.md`) and reusable across every video for that brand. **Curate**: compare first vs. last frame — identical framing = camera locked (good); grown/zoomed-in = rejected, re-roll or fall back to static.
    - **A UI screenshot, text strip, letterbox collage or any other composite *without* a natural element** → **a static hold**; i2v morphs a screen/composition strangely (Veo stretches letterbox bars, hallucinates content). The **crafted cross-dissolves + heavy titles + grade** supply the motion. Static is the premium choice here, not a compromise.
 
-Test every delivery against these 5 before the premium test. Falls below this level → rebuild, don't ship.
+6. **Every video with AI imagery or AI audio carries the label.** Visible: "Made with AI" on the end card (small, in the brand style); if real people appear in i2v-animated footage, also briefly at their first appearance. Machine-readable: `-metadata comment="AI-generated imagery — <brand>, EU AI Act art. 50"` on the master (`scripts/qa-check.sh` checks it). This is law in the EU since 2 August 2026 (Regulation 2024/1689, art. 50) and plain honesty everywhere else; the client does not get to strip the label — put that in the engagement terms.
+
+Test every delivery against these 6 before the premium test. Falls below this level → rebuild, don't ship.
 
 ## The premium test (does it feel paid-for)
 Ask on every render: *would a high-end brand pay for this?* If not, check:
@@ -103,6 +105,7 @@ Thin text on moving footage reads "thin" and cheap. Premium titles are **heavy, 
 ## 7. Pre-delivery inspection (MANDATORY — non-negotiable)
 **You do NOT judge a moving medium on a handful of loose thumbnails.** Declaring a montage "done" without this protocol = the #1 failure source (learned in production). Before you deliver or say "done":
 
+0. **The measurable gate first**: `scripts/qa-check.sh <deliverable> --expect <s> [--social] [--cuts cutlengths.txt] [--clips clips/]`. A FAIL here (colour tags, size, loudness, rhythm, dead cuts, AI label) is by definition not finished; only then is the visual inspection below worth doing.
 1. **Dense frame strip**: pull frames across the *whole* clip at ≤0.7s intervals (`ffmpeg -ss t -i out.mp4 -frames:v 1`), tile them, and **view them with the Read tool**. This reveals dead time, dark/murky shots, and the rhythm.
 2. **Cut-boundary inspection**: for EVERY cut/transition — view the **out-frame of shot A next to the in-frame of shot B**. A cut exists by virtue of those two frames. Murky/mid-motion/dark = rejected → re-pick in/out or the transition.
 3. **In/out is chosen on frames, not arithmetic**: determine clip boundaries by looking at the actual frames, not via `frame≈k/12·duration`. Cut on a clean/stable frame, on motion or beat.
@@ -127,3 +130,17 @@ The videos represent professional capability; amateur work costs collaborations.
 5. **Study the reference before you design.** Look first at the best existing work in the portfolio and calibrate your design to it. Don't iterate wildly — **first understand what you're making**, design the money-frame, lock the keyframe, then animate.
 
 > Hero-shot workflow: (a) study reference → (b) design the shot (camera, physics, light, timing, money-frame) → (c) generate keyframe(s) and choose critically → (d) **art-directed i2v × multiple takes, curate** → (e) data/text hits on the impact (no fade) + SFX (rumble→whoosh→boom) + grade → (f) validate one shot, then fan out.
+
+## 9. Measurement discipline — how we judge without fooling ourselves (consolidated 2026-11-08)
+The rules in this document are only worth something if the measurement is right. Each of these lessons came out of a near-false verdict.
+1. **Inspect at native resolution and check SAR.** A strip that resizes frames hides framing *and* aspect errors (an empty letterboxed leader and a clashing hero were only visible at full res; 2026-07-10). At least one native frame per segment; `sample_aspect_ratio ≠ 1:1` = stretched.
+2. **Sample the last quarter densely**: late action (Kling) and late intruders don't show on 6 frames (2026-10-14, 10-16). Read frames with `-i file -ss t`, not `-ss t -i file` (half-decoded frame), and test a transition at several points — one frame in the middle of a dip-to-black always looks fine (2026-09-22).
+3. **Measure segments and intermediates, not only the final film**: a correct final duration proved nothing about 33× too-long segments (2026-09-22); a `| tail -1` hid the same un-rebuilt `tour.mp4` three times — check the mtime (2026-08-21). `qa-check.sh` measures the deliverable; the segment guard belongs in the build.
+4. **A positive control is not optional.** Without the colour control, "negative prompt does nothing" would have read as "claim false" instead of "knob not connected" (2026-08-19).
+5. **Validate the tracker before the metric**: an NCC tracker sat on a brown door that slipped through the skin mask and gave a false negative; threshold NCC ≥ 0.70 (2026-08-19).
+6. **Test the sensitivity**: a known σ=0.5 blur dropped the measure by 0.09 — as large as the between-arm difference; so the instrument could see the effect, it just wasn't there (2026-08-19).
+7. **Calibrate a style metric on a content-matched ground truth** (the same scene in the target style and photoreal): flatness (cel 0.635 vs photo 0.395, but a photoreal billboard 0.749), palette compactness and local uniformity (0.239 vs 0.158) measure the scene; mid/edge (cel 3.13 vs photo 5.39) measures the style. At 720p that measure had +14 % range against +72 % at 1080p (2026-08-19).
+8. **An area measure measures framing, not compliance**: "how much yellow is in frame" (U=44/64) turned out to be a larger figure (U=52/64, +32 %) at equal hue (43.0° vs 40.8°, U=40/64). Split size from property (2026-08-19).
+9. **Measure alpha, motion and loudness instead of looking or listening**: torso alpha ≥ 98 % (`consistency.md` §7), motion energy (`directing.md` §2/§7), `ebur128` per episode (`montage-ffmpeg.md`). You cannot hear audio: say so, deliver with a caveat.
+10. **Thumbnail from the source frame**, not composited: a crop of the outro via multiply/divide gave a fringe three times; a 1280×720 crop of the frame itself is seamless (2026-11-01).
+11. **A rule in a document is not a gate.** Three rules from this log (bt709 tags, ≤ 16 MB social, −14 LUFS) had stood for months and a delivered client video failed all three (2026-11-08) → `scripts/qa-check.sh` before every delivery (§7 step 0).

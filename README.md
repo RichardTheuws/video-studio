@@ -38,8 +38,8 @@ It does two things, and combines them:
 - **From chat.** No editor, no render farm, no manual export. Prompt → film.
 - **On‑brand by default.** It adopts your existing style guide (or creates one), builds a reusable **leader + outro** bracket, and holds the lines you set on every film.
 - **A real quality bar.** Crafted transitions (no hard‑cut‑by‑default), heavy readable titles with backing, one consistent grade + grain, a hook in the first 1.5s, audio levelled & ducked. It refuses to ship "technically works."
-- **Honest & scriptable.** Proven tools glued into one pipeline — `ffmpeg`, `ImageMagick`, `nano-banana`, `fal.ai`. No black boxes. It even improves its own playbook after every job.
-- **Self‑checking.** A tooling **preflight** runs before every job and *stops and asks* rather than silently degrading. And a one‑time **doctor** tells you if your machine is ready.
+- **Honest & scriptable.** Proven tools glued into one pipeline — `ffmpeg`, `ImageMagick`, `nano-banana`, `fal.ai` through one small library (`scripts/lib/fal.sh`: key, upload to fal's own storage, submit/wait/result, a cost log per production). No black boxes. It even improves its own playbook after every job.
+- **Self‑checking.** A tooling **preflight** runs before every job and *stops and asks* rather than silently degrading. A one‑time **doctor** tells you if your machine is ready. And a measurable **QA gate** (`scripts/qa-check.sh`) checks every deliverable — colour tags, size, loudness, rhythm, dead cuts, AI label — before anyone looks at a frame strip.
 
 ## ⚡ Quickstart
 
@@ -91,7 +91,7 @@ The **doctor** (`skills/video-studio/scripts/doctor.sh`) checks all of this for 
 |---|------|-----|---------|
 | **Core** | `ffmpeg` · `jq` · `curl` | montage, transcode, grading, audio | `brew install ffmpeg jq` |
 | **Full‑AI** | `nano-banana` (Bun + Gemini) | consistent keyframes / stills | see `reference/tooling.md` |
-| | `FAL_AI_KEY` | image‑to‑video (Kling v3) | [fal.ai](https://fal.ai) |
+| | `FAL_AI_KEY` | image‑to‑video (Seedance 1.5 Pro / Kling v3 Pro) | [fal.ai](https://fal.ai) |
 | **Titles** | `node` ≥ 22 (HyperFrames via `npx`, pinned) | the title layer: one composition for 9:16 + 16:9 | `brew install node` |
 | | `ImageMagick` + `pango` | text *in* the world (perspective on a surface) + fallback titles | `brew install imagemagick pango` |
 | **Footage** | `yt-dlp` | *only* to pull clips from URLs | `brew install yt-dlp` |
@@ -126,7 +126,7 @@ Deep‑dive playbooks live in [`reference/`](skills/video-studio/reference/):
 - [`series-production.md`](skills/video-studio/reference/series-production.md) — one film → a series or campaign, from one proven template
 - [`scroll-video.md`](skills/video-studio/reference/scroll-video.md) — a film the visitor plays by scrolling
 - [`print-on-product.md`](skills/video-studio/reference/print-on-product.md) — a print on a product that reads as real, measured not guessed
-- [`lessons.md`](skills/video-studio/reference/lessons.md) — a running log of production lessons
+- [`lessons.md`](skills/video-studio/reference/lessons.md) — the index of production lessons: one line per lesson with its measurement, pointing at the rule in the playbook above
 
 ## The quality bar (the part most tools skip)
 
@@ -135,7 +135,9 @@ Four defaults it **never** ships with:
 1. **No hard cuts by default** — premium leans on crafted transitions (cross‑dissolves, dip‑to‑white, speed‑ramps, J/L‑cuts). A hard cut is a deliberate choice on the beat.
 2. **No thin, unreadable titles** — text is always heavy (700–900), large, and on backing (scrim / plate / bar). One type system.
 3. **No flat, jumping grade** — one consistent, rich grade across every shot, plus grain.
-4. **Never "technically works"** — a moving medium is judged on a dense frame‑strip and real playback, never on stray thumbnails, and one cut is validated before fanning out to languages or formats.
+4. **Never "technically works"** — a moving medium is judged on a dense frame‑strip and real playback, never on stray thumbnails, and one cut is validated before fanning out to languages or formats. The measurable half of that bar is a script (`scripts/qa-check.sh`), because a rule in a document is not a gate.
+
+And one default it always ships *with*: every film that contains AI imagery or audio says so — on the end card and in the file's metadata (EU AI Act, art. 50).
 
 ## ⭐ Star it
 
@@ -143,7 +145,7 @@ If this saves you a shoot day — or just makes you smile — **give it a star**
 
 ## Contributing
 
-Issues and PRs welcome — new montage recipes, model updates, platform ports, better prompts. The skill is designed to grow: every lesson goes into `reference/lessons.md` and the `CHANGELOG`.
+Issues and PRs welcome — new montage recipes, model updates, platform ports, better prompts. The skill is designed to grow: every lesson becomes a rule in the relevant playbook, one index line in `reference/lessons.md`, and an entry in the `CHANGELOG`.
 
 ## License
 
