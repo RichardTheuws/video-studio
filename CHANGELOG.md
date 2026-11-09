@@ -2,6 +2,9 @@
 
 Format: [SemVer](https://semver.org). Newest on top.
 
+## 1.3.3 — 2026-11-09
+- `fal.sh` cost log: image endpoints (unit `images`, e.g. `fal-ai/nano-banana-pro`) are now estimated as price × `num_images`. Before, they logged `null` and a run with `num_images: 2` was easy to undercount by half in a cost report.
+
 ## 1.3.2 — 2026-11-08
 - **EU AI label in the title template.** The official European Commission icons (AI / AI GENERATED / AI MODIFIED, white and black) ship in `templates/titles/shared/eu-ai-label/`; a new `ailabel` spec item places them inside the safe band (9:16 bottom-left, 16:9 bottom-right) with a plain-language text such as "Made with AI". Required by `commercial-craft.md` §0 rule 6 (EU AI Act Art. 50).
 

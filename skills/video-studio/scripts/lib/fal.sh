@@ -125,8 +125,10 @@ fal_cost_log() { # <endpoint> <request_id> <req.json>
   local ep="$1" rid="$2" req="$3" log="${FAL_COST_LOG:-./costs.jsonl}" price unit dur est
   read -r price unit <<<"$(fal_price "$ep")"
   dur=$(jq -r '.duration // .seconds_total // empty' "$req" 2>/dev/null | tr -d 's')
-  est=$(awk -v p="$price" -v u="$unit" -v d="$dur" 'BEGIN{ if(p=="?"){print "null"; exit}
-        if(u=="seconds" && d!=""){printf "%.3f", p*d} else if(u~/^(audios|units|requests)$/){printf "%.3f", p} else {print "null"} }')
+  local n; n=$(jq -r '.num_images // 1' "$req" 2>/dev/null); n=${n:-1}   # image endpoints are priced per image, not per call
+  est=$(awk -v p="$price" -v u="$unit" -v d="$dur" -v n="$n" 'BEGIN{ if(p=="?"){print "null"; exit}
+        if(u=="seconds" && d!=""){printf "%.3f", p*d} else if(u=="images"){printf "%.3f", p*n}
+        else if(u~/^(audios|units|requests)$/){printf "%.3f", p} else {print "null"} }')
   jq -nc --arg ts "$(date -u +%FT%TZ)" --arg ep "$ep" --arg rid "$rid" --arg dur "$dur" --arg p "$price" --arg u "$unit" --argjson est "$est" \
      '{ts:$ts,endpoint:$ep,request_id:$rid,duration:($dur|if .=="" then null else . end),unit_price:($p|tonumber? // null),unit:$u,est_usd:$est}' >> "$log"
   if [ "$est" != "null" ]; then echo "cost: ~\$$est ($ep, $dur s) → $log" >&2
