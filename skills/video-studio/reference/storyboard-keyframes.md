@@ -21,6 +21,7 @@ Turn the text storyboard into one prompts file, one beat per line: `SECTION|LABE
 - **Generate text-free** (lettering comes separately, `consistency.md` §3) — put "no text" in every prompt.
 - Adopt the brand canon (color hex, tone) from the brand's kit — never guess (`brand-intake.md` §2).
 - Every content beat is a **proof shot** for its line (`existing-footage.md` §3, `lessons.md`).
+- **Draw the peak keyframe first** (`scenario.md` S-A01/S-A02): the one image a viewer retells, usually also the hardest to get right. Board order ≠ edit order. Put the brief's tags (`taxonomy.md`) at the top of `prompts.txt` as `#` comments; `storyboard.sh` skips them.
 
 ```
 # prompts.txt — example (16:9, brand periwinkle #627CB6)

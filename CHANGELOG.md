@@ -2,6 +2,11 @@
 
 Format: [SemVer](https://semver.org). Newest on top.
 
+## 1.4.0 — 2026-11-14
+- **A story layer: `reference/scenario.md` + `reference/taxonomy.md`.** Telling order (open on the peak, then show how) and ±85 lessons across 11 video types (teaser, promo, social proof, explainer, tips, spotlight, walkthrough, leader, series, brand film, personal film). Every lesson carries a status (`external-strong` / `external` → `signal` → `house-rule`), its evidence and the metric that would confirm it; conflicts between lessons are resolved explicitly. A fixed tag vocabulary goes in the front matter of `brief.md` so a learning loop can link choices to results.
+- `qa-check.sh --titles spec.json`: reading-time gate per title from the HyperFrames spec, ≥ max(1.5 s; characters ÷ 15).
+- `SKILL.md` §1.5, `commercial-craft.md` §0.4 and `storyboard-keyframes.md` (draw the peak keyframe first) point to it.
+
 ## 1.3.4 — 2026-11-14
 - **Kling v3 Pro is the default for every shot again.** fal retired Seedance 1.5 Pro on 2026-11-11; `models.md` marks it as retired, README/doctor/tooling no longer name it. New lesson: a retirement date is in the models API (`retires_at`), not in the pricing API.
 - **Pango is no longer the title-layer fallback** (the three-production condition for HyperFrames is met); it stays for text in the world and stills.

@@ -50,7 +50,7 @@ When unsure whether usable footage exists: **inventory first** (mode A, "auto-se
 
 ## 1.5 Concept round → storyboard sign-off (STANDARD)
 This is intake step 5. For any video with a creative/narrative layer (titles, treatment, montage tone, storyboard): do **not** start with one chosen direction. First give the user **3 concrete concept suggestions** — story/title/treatment directions, recommended first, with the copy/arc per concept. The user picks before the full build. This prevents "beautifully made, wrong story".
-- Titles/story must tell a **rising arc** (setup → tension → payoff → identity), not loose labels. Deliver the exact lines per concept, not just a theme.
+- Titles/story must tell a **rising arc** (setup → tension → payoff → identity), not loose labels. The **telling order** may start at the payoff (open on the peak, then show how). Deliver the exact lines per concept, not just a theme. **Story lessons per video type + tags in the brief: `reference/scenario.md` and `reference/taxonomy.md`; read them before the concept.**
 - Then layer up: **GOOD → EXTREME** (a coherent version first, then push to per-letter kinetics, beat-sync, light-leaks). Show intermediate steps.
 - **For a narrative/multi-shot video this is a sign-off gate**: the chosen concept becomes a **shot-by-shot storyboard** (beat, on-screen copy, shot-type, source: real footage / AI keyframe) the user **approves before production**. Nothing is produced until the storyboard stands. (See `reference/brand-intake.md` for the storyboard format.)
 - **A visual keyframe storyboard is the cheap gate before i2v.** For AI imagery, render the storyboard as a board of **real keyframes (stills)** before you run a single second of image-to-video — stills cost cents (~€0.60 for 10), i2v costs ~€5. That de-risks the spend and gives the client direction on something tangible. Generate at **delivery quality** (the board is the personalised floor, not a shop window). Recipe + script: **`reference/storyboard-keyframes.md`** (`scripts/storyboard.sh`).
@@ -110,6 +110,7 @@ This skill must grow. On **every** run:
 - `scripts/pick-window.sh` — measures the strongest window in an i2v clip (`<clip> <sec> [--cut out.mp4]`).
 - `scripts/render-titles.sh` — renders the HyperFrames title layer as a transparent ProRes 4444 MOV, with a QA gate on alpha + duration.
 - `templates/titles/` — the title-layer composition (one source for 9:16 + 16:9, fonts + GSAP bundled, brand via `spec.brand`).
+- `reference/scenario.md` — **the story** (before §1.5): telling order, lessons per video type (teaser … personal film) with evidence level and status, and the conflicts between lessons. `reference/taxonomy.md` — the fixed tags in the front matter of `brief.md` (what a learning loop measures against).
 - `reference/storyboard-keyframes.md` — **the storyboard gate** (§1.5): why (i2v economics + de-risking), the honesty/floor rule, beats→prompts→board recipe, edge cases.
 - `reference/brand-intake.md` — **the intake gate** (§0.5): brand adopt-or-create, leader/outro, lines-you-never-cross, storyboard format + sign-off, keyframe plan.
 - `reference/series-production.md` — **series / campaign mode** (§0.6): series storyboard + sign-off for the whole set, PoC gate before fan-out, deterministic capture rig, one template → parallel fan-out, fan-out discipline.

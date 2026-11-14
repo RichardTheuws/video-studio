@@ -7,13 +7,14 @@
 #     --expect <s>        expected duration (±0.5 s; ±1.0 with --social)     --cuts <cutlengths.txt>  one cut length (s) per line
 #     --clips <dir>       individual shots: measure dead cuts (motion energy) --social                 messenger-shareable: ≤ 16 MB, −14 LUFS
 #     --lufs <target>     loudness target (default −16; --social sets −14)   --genre teaser|explainer mean shot length < 3.0 s for a teaser
+#     --titles <spec.json> reading time per title from the HyperFrames spec: ≥ max(1.5 s; characters ÷ 15) (scenario.md S-A05)
 #   Exit 0 = every check PASS. Every FAIL names the measurement and the rule it comes from.
 set -uo pipefail
-F="${1:?usage: qa-check.sh <deliverable.mp4> [--expect s] [--cuts f] [--clips dir] [--social] [--lufs n] [--genre teaser|explainer]}"; shift
-EXPECT=""; CUTS=""; CLIPS=""; SOCIAL=0; LUFS=-16; LUFS_SET=0; GENRE="explainer"
+F="${1:?usage: qa-check.sh <deliverable.mp4> [--expect s] [--cuts f] [--clips dir] [--social] [--lufs n] [--genre teaser|explainer] [--titles spec.json]}"; shift
+EXPECT=""; CUTS=""; CLIPS=""; TITLES=""; SOCIAL=0; LUFS=-16; LUFS_SET=0; GENRE="explainer"
 while [ $# -gt 0 ]; do case "$1" in
   --expect) EXPECT="${2:?--expect needs a value}"; shift 2;; --cuts) CUTS="${2:?--cuts needs a file}"; shift 2;; --clips) CLIPS="${2:?--clips needs a dir}"; shift 2;;
-  --social) SOCIAL=1; shift;; --lufs) LUFS="${2:?--lufs needs a value}"; LUFS_SET=1; shift 2;; --genre) GENRE="${2:?--genre needs a value}"; shift 2;;
+  --social) SOCIAL=1; shift;; --lufs) LUFS="${2:?--lufs needs a value}"; LUFS_SET=1; shift 2;; --genre) GENRE="${2:?--genre needs a value}"; shift 2;; --titles) TITLES="${2:?--titles needs a spec.json}"; shift 2;;
   *) echo "unknown option $1" >&2; exit 2;; esac; done
 [ "$SOCIAL" = 1 ] && [ "$LUFS_SET" = 0 ] && LUFS=-14   # --social implies −14 unless --lufs was given explicitly
 [ -f "$F" ] || { echo "ERROR: $F does not exist" >&2; exit 2; }
@@ -62,7 +63,34 @@ if [ -n "$CLIPS" ] && [ -d "$CLIPS" ]; then dead=""
   done
   [ -z "$dead" ] && pass "dead cuts" "no shot below 0.5" || failm "dead cuts" "shots below 0.5:$dead — failed i2v → redraw the keyframe (directing.md §2); a deliberate static hold (UI/card, commercial-craft §0.5) is fine, just keep it out of --clips"
 fi
-# 8. AI label in the metadata (EU AI Act art. 50): the visible label on the end card is a visual check; this is the machine-readable half
+# 8. title reading time (scenario.md S-A05: Mayer/Szarkowska — ≤ 15 characters/s, at least 1.5 s; sound-off reads slower)
+if [ -n "$TITLES" ]; then
+  if [ ! -f "$TITLES" ]; then failm "reading time" "spec $TITLES does not exist"
+  else LT=$(python3 -I - "$TITLES" <<'PY'
+import json, sys
+try:
+    items = json.load(open(sys.argv[1])).get("items", [])
+except Exception as e:
+    print("ERR unreadable spec: %s" % e); sys.exit(0)
+bad = []; n = 0
+for i, it in enumerate(items):
+    if it.get("kind") == "ailabel": continue            # legal label, not reading text
+    parts = [it.get(k) for k in ("kicker", "head", "text", "typed", "knew")]
+    foot = it.get("foot") or []
+    parts += foot if isinstance(foot, list) else [foot]
+    txt = " ".join(str(p) for p in parts if p).replace("*", "").replace("\n", " ")
+    chars = len(" ".join(txt.split()))
+    if not chars or "in" not in it or "out" not in it: continue
+    n += 1; dur = float(it["out"]) - float(it["in"]); need = max(1.5, chars / 15.0)
+    if dur + 1e-6 < need:
+        bad.append("#%d %s %d chars in %.1fs (needs %.1fs)" % (i, it.get("kind", "?"), chars, dur, need))
+print("OK %d" % n if not bad else "BAD " + "; ".join(bad))
+PY
+)
+    case "$LT" in OK*) pass "reading time" "${LT#OK } titles ≥ chars÷15 and ≥ 1.5 s";; ERR*) failm "reading time" "${LT#ERR }";; *) failm "reading time" "${LT#BAD } — hold longer or shorten the line (scenario.md S-A05)";; esac
+  fi
+fi
+# 9. AI label in the metadata (EU AI Act art. 50): the visible label on the end card is a visual check; this is the machine-readable half
 CM=$(ffprobe -v error -show_entries format_tags=comment -of csv=p=0 "$F")
 shopt -s nocasematch; case "$CM" in *AI-gegenereerd*|*AI-generated*|*"Made with AI"*|*"Gemaakt met AI"*|*"AI Act"*) pass "AI label" "metadata: ${CM:0:60}";; *) failm "AI label" "no AI marking in the metadata — encode with -metadata comment=\"AI-generated imagery — <brand>, EU AI Act art. 50\" (montage-ffmpeg.md)";; esac; shopt -u nocasematch
 echo "──"; [ "$fail" = 0 ] && { echo "QA: PASS"; exit 0; } || { echo "QA: FAIL — do not deliver (commercial-craft.md §7)"; exit 1; }
