@@ -197,7 +197,7 @@ Method:
    shot.
 
 > **Title layer (plates, cards, kinetic typography over the edit) → `titles-hyperframes.md`.** Pango remains
-> the route for text *in* the world (perspective warp onto a surface), and the fallback for the title layer.
+> the route for text *in* the world (perspective warp onto a surface); for the title layer only an emergency route.
 
 > **Gotcha (verified on Apple Silicon, Homebrew ffmpeg 8.1.2):** this build has **no `drawtext`** (no
 > libfreetype) and **no `subtitles`/`ass` filter** (no libass). All text — subtitles and karaoke included —

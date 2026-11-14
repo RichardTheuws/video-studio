@@ -75,7 +75,7 @@ echo ""
 echo "${BOLD}Full-AI mode${NC} ${DIM}(generate stills/keyframes → image-to-video)${NC}"
 have nano-banana && line nano-banana "Gemini image CLI" || { fail nano-banana "npm i -g nano-banana  (needs Bun + a Gemini API key)"; miss_ai=1; }
 have magick && line ImageMagick "$(magick -version 2>/dev/null | head -1 | awk '{print $3}')" || { fail ImageMagick "$PKG imagemagick  (heavy titles / lettering)"; miss_ai=1; }
-have_key FAL_AI_KEY && line FAL_AI_KEY "image-to-video (Seedance / Kling), Flux, stable-audio" || { fail FAL_AI_KEY "set FAL_AI_KEY in ~/.config/video-studio/.env  →  https://fal.ai"; miss_ai=1; }
+have_key FAL_AI_KEY && line FAL_AI_KEY "image-to-video (Kling), Flux, stable-audio" || { fail FAL_AI_KEY "set FAL_AI_KEY in ~/.config/video-studio/.env  →  https://fal.ai"; miss_ai=1; }
 have_key GEMINI_API_KEY && line GEMINI_API_KEY "nano-banana keyframes" || optl GEMINI_API_KEY "needed by nano-banana → https://aistudio.google.com/apikey"
 have_key ELEVENLABS_API_KEY && line ELEVENLABS_API_KEY "voices / SFX" || optl ELEVENLABS_API_KEY "voices / SFX"
 echo ""

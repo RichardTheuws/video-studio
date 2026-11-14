@@ -56,8 +56,13 @@ Dates are the day it went wrong (or was measured), so a rule can be traced to it
 - 2026-10-22 — walk-to-camera out of frame after ~5.8 s → keyframe at 75 %, lower, headroom. Loop with start = end: seam 0.77 vs frame step 0.14, with a 1 s crossfade (N−24 frames) 0.34. Rising from the dark: end frame at 22 % dimmed as the start frame; nano-banana refused "same face from afar" (0 images). Projection membrane: `o = 0.15 + 0.15·(L−Lref) + (D>0 ? 2.3·D : 1.35·D)`, L = gauss σ130 @1080p, flat screen 0.149, vignette superellipse p 2.4, edge exactly 0.
 - 2026-11-01 — Kling turned "abstract shapes" in a shop window into a heart (see 2026-07-13).
 - 2026-11-08 — Seedance 1.5 Pro test bench II: identity equal to Kling v3, native 1920×1080, ≈ $0.35/6 s vs $0.84; the end-frame transition loses (`models.md`).
+- 2026-11-09 — three Kling v3 end-frame transitions that share each other's end frame (K1→K2, K2→K3, K3→light field) cut together into one continuous shot (scene score max 0.03); pace via speed ramps per segment. The xfade to the landing card must fall on the *white* part of the last clip (YAVG > 210), or the logo slides over visible image.
+- 2026-11-12 — a Kling v3 start + end frame transition in **9:16** drifted from ~2.2 s into a young, dark-haired stock hero (identity drift toward a protected archetype); the same transition in 16:9 held. Seen frame by frame at 5 fps, not on a 1 fps strip. Fix without a re-render: cut on the take-off (first ~1.3 s of the transition becomes a separate shot).
+- 2026-11-14 — fal retired Seedance 1.5 Pro on 2026-11-11, three days after it became the default; Kling v3 Pro is the default again. A retirement date lives in `api.fal.ai/v1/models?endpoint_id=…` (`retires_at`, `replacement`), **not** in the pricing API, which keeps listing the endpoint — check it whenever you pick a model.
 
 ## nano-banana / keyframes / keying → `consistency.md` §6–7
+- 2026-11-09 — Gemini API 402 `RESOURCE_EXHAUSTED` (prepaid credit used up) stops nano-banana; the same model runs on fal: `fal-ai/nano-banana-pro` (+ `/edit` with `image_urls` as the anchor), $0.15/image, `resolution:"2K"` gives 2752×1536.
+- 2026-11-12 — references copied from an earlier production can be **Git-LFS pointers** (132 bytes of ASCII) if they were never checked out; nano-banana only says `400 Unable to process input image` and the whole board fails. Run `file <ref> | grep -v 'image data'` before each generation; restore with `git lfs checkout <path>`.
 - 2026-06-24 — 9 characters consistent across 6 comic pages via the cover as the `-r` anchor; generate text-free, keep text-free masters.
 - 2026-07-10 — a real pet → a 3D anchor from 3–4 photos; likeness held across 6 Veo shots (`consistency.md` §1).
 - 2026-07-12 — keyframe storyboard as a gate: stills ~€0.06, a board of 10 ~€0.60, i2v ~€5; break-even ~2 % conversion at ~€1/board and ~€45 margin (`storyboard-keyframes.md`).
@@ -72,6 +77,8 @@ Dates are the day it went wrong (or was measured), so a rule can be traced to it
 - 2026-11-01 — nano-banana Pro 9:16 rotated 90° twice; "Upright portrait orientation … sky at the top, road at the bottom" + "lower fifth / upper fifth" works.
 
 ## Typography and titles → `commercial-craft.md` §2, `tooling.md`, `titles-hyperframes.md`
+- 2026-11-12 — an ImageMagick end-card vignette step inherited `-geometry` from the previous composite → always reset with `-geometry +0+0` before a full-frame multiply.
+- 2026-11-14 — three productions shipped their titles via HyperFrames → pango is no longer the title-layer fallback; it stays for text in the world and stills.
 - 2026-06-24 — a mono logo variant flattens an emblem into a disc → full colour on a glass panel (rgba ~0.62 + a gold hairline) (`brand-intake.md` §7).
 - 2026-07-07 — InterDisplay Black as a Druk Wide substitute; `label:` before `-border`; bake lower-thirds per beat clip (no retime across the xfade chain).
 - 2026-07-10 — a title bar on a hero that already shows the site headline = double text: drop it.
@@ -137,6 +144,7 @@ Dates are the day it went wrong (or was measured), so a rule can be traced to it
 - 2026-11-08 — preflight reports peer drift and the ffmpeg version (local 8.1.2 ≠ peer 9.0.2); after aligning both on 9.0.2 the core recipes (xfade+settb, ProRes overlay, signalstats, ebur128, pango chain) were unchanged.
 
 ## QA and measuring → `commercial-craft.md` §7 and §9, `directing.md` §6–7
+- 2026-11-12 — custom PIL beat renderer: a segment mixed in by a crossfade before its first cut got a negative local time; a flash formula `1 - t/0.14` went above 1 and `astype(np.uint8)` without a clip produced a rainbow-noise frame (visible only on a frame strip at the segment boundary, not at 1 fps). Rule: `np.clip(…, 0, 255)` before every `astype(np.uint8)`, local time < 0 = first frame without effect, and an automatic check on all segment boundaries.
 - 2026-06-26 — a first cut approved on ~10 thumbnails, the client saw bad cuts: strip ≤ 0.7 s, out/in frame per cut, hold per card; cards ~28 % (max ~25 %); a speaker talking silently for 3 s; uniform 0.3 s dissolves = mud; 3 language versions before the core cut was right; a CTA assumption untested.
 - 2026-07-10 — resized strips hide aspect/framing (an empty letterboxed leader, a clashing hero); a native frame per segment, check SAR.
 - 2026-07-20 — 3D walkthrough: a plan hold with micro-drift reads as a still (10–12 s identical); explode layers 3400/4300/5200 cm with the camera at 2000, easing `t^2.1`; 9:16 from a 3D rig FOV 55 → 78 (117° would distort), end points −(look − pos).

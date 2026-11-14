@@ -19,7 +19,7 @@ What the skill uses, how to check for it, and how to install it (after approval)
 | Chrome | (HyperFrames finds/fetches its own headless Chrome) | — | frame capture; always `--no-browser-gpu` for cross-machine parity |
 | title template | `ls templates/titles/shared/fonts` | ships with the skill | fonts + GSAP live inside the composition, so no system-font dependency; brand via `spec.brand` |
 
-## Lettering / title cards — pango (fallback for the title layer; stays for text-in-the-world)
+## Lettering — pango (text-in-the-world and stills; the title layer is HyperFrames)
 Canonical text render: **real pango rendering via `pango-view` → transparent PNG → composite with ImageMagick.**
 | Tool | Check | Install | Role |
 |------|-------|---------|------|
@@ -36,7 +36,7 @@ Canonical text render: **real pango rendering via `pango-view` → transparent P
 |----------|-------|-------------|------|
 | nano-banana | `which nano-banana` | `nano-banana` skill → `/init` (Bun + Gemini key) | stills/keyframes (Gemini 3 Flash/Pro), reference anchor, green-screen |
 | ImageMagick (`magick`) | `magick -version` | `brew install imagemagick` | lettering, caption boxes, compositing, exact dimensions |
-| FAL_AI_KEY | `scripts/lib/fal.sh key` | `FAL_AI_KEY=...` in `~/.config/video-studio/.env` | image-to-video (Seedance / Kling), Flux/Recraft image, stable-audio |
+| FAL_AI_KEY | `scripts/lib/fal.sh key` | `FAL_AI_KEY=...` in `~/.config/video-studio/.env` | image-to-video (Kling), Flux/Recraft image, stable-audio |
 | ELEVENLABS_API_KEY | env or `.env` | optional | voices/SFX |
 | SUNO_API_KEY | env or `.env` | optional | music (often produced in-browser; supply prompts) |
 

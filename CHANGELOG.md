@@ -2,6 +2,12 @@
 
 Format: [SemVer](https://semver.org). Newest on top.
 
+## 1.3.4 — 2026-11-14
+- **Kling v3 Pro is the default for every shot again.** fal retired Seedance 1.5 Pro on 2026-11-11; `models.md` marks it as retired, README/doctor/tooling no longer name it. New lesson: a retirement date is in the models API (`retires_at`), not in the pricing API.
+- **Pango is no longer the title-layer fallback** (the three-production condition for HyperFrames is met); it stays for text in the world and stills.
+- Lessons: an end-frame chain cut as one continuous shot, Kling 9:16 transition identity drift, Gemini 402 → nano-banana-pro on fal, LFS pointers as references, ImageMagick `-geometry` leak, uint8 overflow in a custom renderer.
+- Plugin manifests were still on 1.3.2; now in step with the changelog.
+
 ## 1.3.3 — 2026-11-09
 - `fal.sh` cost log: image endpoints (unit `images`, e.g. `fal-ai/nano-banana-pro`) are now estimated as price × `num_images`. Before, they logged `null` and a run with `num_images: 2` was easy to undercount by half in a cost report.
 

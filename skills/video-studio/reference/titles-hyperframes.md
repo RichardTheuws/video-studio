@@ -8,7 +8,8 @@ composition** that headless Chrome renders frame by frame. Proven in a proof-of-
 side by side against the pango version), one source for 9:16 + 16:9, 980/980 frames bit-identical across two machines,
 and running unattended on a headless render server.**
 
-**Pango stays the fallback** (`tooling.md`, `title-sequence.md` §6) until three productions have shipped via HyperFrames.
+**Pango is no longer the title fallback**: the condition of three productions shipped via HyperFrames was met on 2026-11-14.
+Only when HyperFrames really cannot run is pango an emergency route, and then the report says so.
 Text *in* the world (a billboard, a doormat with a perspective warp) stays pango/magick regardless: that is compositing
 onto a surface, not a title layer.
 

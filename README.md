@@ -91,7 +91,7 @@ The **doctor** (`skills/video-studio/scripts/doctor.sh`) checks all of this for 
 |---|------|-----|---------|
 | **Core** | `ffmpeg` · `jq` · `curl` | montage, transcode, grading, audio | `brew install ffmpeg jq` |
 | **Full‑AI** | `nano-banana` (Bun + Gemini) | consistent keyframes / stills | see `reference/tooling.md` |
-| | `FAL_AI_KEY` | image‑to‑video (Seedance 1.5 Pro / Kling v3 Pro) | [fal.ai](https://fal.ai) |
+| | `FAL_AI_KEY` | image‑to‑video (Kling v3 Pro) | [fal.ai](https://fal.ai) |
 | **Titles** | `node` ≥ 22 (HyperFrames via `npx`, pinned) | the title layer: one composition for 9:16 + 16:9 | `brew install node` |
 | | `ImageMagick` + `pango` | text *in* the world (perspective on a surface) + fallback titles | `brew install imagemagick pango` |
 | **Footage** | `yt-dlp` | *only* to pull clips from URLs | `brew install yt-dlp` |
