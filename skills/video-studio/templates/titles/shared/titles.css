@@ -7,7 +7,9 @@
 @font-face { font-family: "Inter Display"; src: url("fonts/InterDisplay-Bold.otf") format("opentype"); font-weight: 700; }
 
 :root { --font-head: "Fraunces"; --font-ui: "Inter Display"; --font-mono: "JetBrains Mono";
-  --plate: rgba(15,76,74,0.86); --teal: #0F4C4A; --amber: #D97A2C; --glow: #E8913F; --paper: #FBF8F3; --ink: #1F2B2A; --muted: #6B7A78; --sage: #B9CFCB; }
+  --plate: rgba(15,76,74,0.86); --teal: #0F4C4A; --amber: #D97A2C; --glow: #E8913F; --paper: #FBF8F3; --ink: #1F2B2A; --muted: #6B7A78; --sage: #B9CFCB;
+  /* shape tokens (override per brand via spec.brand): corner radius, shadow, card vignette, heading weight */
+  --radius: 26px; --shadow: 0 12px 70px rgba(0,0,0,0.55); --vignette: rgba(60,45,30,0.22); --head-weight: 900; --border: none; }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { overflow: hidden; background: transparent; }
 #root { position: relative; overflow: hidden; }
@@ -16,19 +18,19 @@ html, body { overflow: hidden; background: transparent; }
 /* ── cards (full frame, paper) ── */
 .card { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center;
   background:
-    radial-gradient(ellipse at 50% 45%, rgba(255,255,255,0) 40%, rgba(60,45,30,0.22) 100%),
+    radial-gradient(ellipse at 50% 45%, rgba(255,255,255,0) 40%, var(--vignette) 100%),
     var(--paper); }
 .kicker { font: 600 26px/1.2 var(--font-ui); letter-spacing: 0.2em; color: var(--sage); }
 .card .kicker { color: var(--muted); }
-.head { font: 900 84px/1.02 var(--font-head); color: var(--teal); margin: 14px 0 44px; text-wrap: balance; }
+.head { font: var(--head-weight) 84px/1.02 var(--font-head); color: var(--teal); margin: 14px 0 44px; text-wrap: balance; }
 .head b { color: var(--amber); }
-.panel { background: rgba(255,255,255,0.96); border-left: 10px solid var(--teal); border-radius: 22px;
-  box-shadow: 0 14px 60px rgba(30,20,10,0.35); padding: 48px 56px; }
+.panel { background: rgba(255,255,255,0.96); border-left: 10px solid var(--teal); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 48px 56px; }
 .code { font: 400 34px/1.42 var(--font-mono); color: var(--ink); }
 .code .pw { position: relative; }
 .code .cur { position: absolute; left: 100%; color: var(--teal); }
 .count { display: flex; align-items: baseline; gap: 18px; margin-top: 56px; }
-.count .n { font: 900 160px/1 var(--font-head); color: var(--amber); font-variant-numeric: tabular-nums; }
+.count .n { font: var(--head-weight) 160px/1 var(--font-head); color: var(--amber); font-variant-numeric: tabular-nums; }
 .count .lbl { font: 700 44px/1 var(--font-ui); color: var(--teal); }
 .foot { margin-top: 48px; }
 .foot .rule { width: 170px; border: 0; border-top: 4px solid var(--teal); margin-bottom: 36px; }
@@ -36,9 +38,9 @@ html, body { overflow: hidden; background: transparent; }
 .foot p + p { color: var(--teal); margin-top: 18px; }
 
 /* ── plates (teal glass) ── */
-.plate { position: absolute; background: var(--plate); border-radius: 26px;
-  box-shadow: 0 12px 70px rgba(0,0,0,0.55); padding: 52px 62px; }
-.plate .title { font: 900 68px/1.08 var(--font-head); color: var(--paper); text-wrap: balance; }
+.plate { position: absolute; background: var(--plate); border-radius: var(--radius); border: var(--border);
+  box-shadow: var(--shadow); padding: 52px 62px; }
+.plate .title { font: var(--head-weight) 68px/1.08 var(--font-head); color: var(--paper); text-wrap: balance; }
 .plate .title.small { font-size: 60px; }
 .plate .quote { font: 700 46px/1.3 var(--font-mono); color: var(--paper); margin: 10px 0 34px; text-wrap: balance; }
 .plate hr { border: 0; border-top: 2px solid rgba(185,207,203,0.35); margin: 0 0 30px; }
@@ -66,3 +68,32 @@ html, body { overflow: hidden; background: transparent; }
 .ailabel.dark { color: #111; text-shadow: none; } .ailabel.dark img { filter: none; }
 .portrait .ailabel { left: 70px; bottom: 330px; height: 56px; font-size: 26px; }
 .landscape .ailabel { right: 72px; bottom: 56px; height: 48px; font-size: 22px; }
+
+/* ── end credits (credit): small lines without a plate, on a calm end frame (leader tail, end card).
+   9:16: centred in the upper band (the app UI sits at the bottom); 16:9: bottom left, mirroring the AI label. ── */
+.credit { position: absolute; opacity: 0; color: var(--paper); text-shadow: 0 1px 3px rgba(0,0,0,.5); }
+.credit.dark { color: var(--teal); text-shadow: none; }
+.credit p { font: 700 40px/1.3 var(--font-ui); }
+.credit p + p { font: 500 32px/1.3 var(--font-mono); color: inherit; opacity: .8; margin-top: 8px; }
+.portrait .credit { left: 70px; right: 70px; top: 260px; text-align: center; }
+.landscape .credit { left: 72px; bottom: 50px; }
+.landscape .credit p { font-size: 32px; } .landscape .credit p + p { font-size: 26px; }
+
+/* ── source line inside a plate, plate at the bottom ── */
+.plate .bron { font: 500 26px/1.3 var(--font-mono); color: var(--sage); margin-top: 18px; letter-spacing: 0.02em; }
+.portrait .plate.onder { top: auto; bottom: 400px; }
+.landscape .plate.onder { top: auto; bottom: 56px; left: 0; right: 0; width: fit-content; max-width: 1500px; margin: 0 auto; height: fit-content; }
+.landscape .plate .bron { font-size: 22px; }
+
+/* ── key-figure card: paper, left-aligned, big number ── */
+.figure { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; background: var(--paper); padding: 0 90px; }
+.figure .num { font: var(--head-weight) 300px/0.9 var(--font-head); color: var(--teal); font-variant-numeric: tabular-nums; }
+.figure .num .noemer { font: 600 64px/1 var(--font-ui); color: var(--ink); margin-left: 24px; }
+.figure .label { font: var(--head-weight) 68px/1.12 var(--font-head); color: var(--ink); margin-top: 48px; text-wrap: balance; max-width: 900px; }
+.figure .bron { font: 500 28px/1.3 var(--font-mono); color: var(--muted); margin-top: 56px; padding-top: 22px; border-top: 2px solid var(--muted); width: fit-content; }
+.landscape .figure { padding: 0 160px; }
+.landscape .figure .num { font-size: 260px; } .landscape .figure .label { font-size: 60px; max-width: 1300px; }
+
+/* ── credit top right (16:9: a mid-film CTA, scenario.md S-PR07) ── */
+.landscape .credit.boven { left: auto; right: 72px; bottom: auto; top: 56px; text-align: right; }
+.portrait .credit.boven { top: 140px; }

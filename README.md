@@ -39,7 +39,7 @@ It does two things, and combines them:
 - **On‑brand by default.** It adopts your existing style guide (or creates one), builds a reusable **leader + outro** bracket, and holds the lines you set on every film.
 - **A real quality bar.** Crafted transitions (no hard‑cut‑by‑default), heavy readable titles with backing, one consistent grade + grain, a hook in the first 1.5s, audio levelled & ducked. It refuses to ship "technically works."
 - **Honest & scriptable.** Proven tools glued into one pipeline — `ffmpeg`, `ImageMagick`, `nano-banana`, `fal.ai` through one small library (`scripts/lib/fal.sh`: key, upload to fal's own storage, submit/wait/result, a cost log per production). No black boxes. It even improves its own playbook after every job.
-- **Self‑checking.** A tooling **preflight** runs before every job and *stops and asks* rather than silently degrading. A one‑time **doctor** tells you if your machine is ready. And a measurable **QA gate** (`scripts/qa-check.sh`) checks every deliverable — colour tags, size, loudness, rhythm, dead cuts, AI label — before anyone looks at a frame strip.
+- **Self‑checking.** A tooling **preflight** runs before every job and *stops and asks* rather than silently degrading. A one‑time **doctor** tells you if your machine is ready. And a measurable **QA gate** (`scripts/qa-check.sh`) checks every deliverable — colour tags, size, loudness, rhythm, dead cuts, AI label — before anyone looks at a frame strip; the title layer gets its own layout gate (`scripts/check-titles.sh`) before it is rendered.
 
 ## ⚡ Quickstart
 

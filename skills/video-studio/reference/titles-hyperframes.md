@@ -66,6 +66,23 @@ guide and paste it into the spec. Look at one test render per format before the 
   A plate must be gone **before** a dissolve (plates double up in a dissolve, `lessons.md` 2026-10-14 II).
 - Text is **plain text** and gets escaped (`& < > ' “ ”` are safe). Markup: `*word*` = accent, `\n` = line break.
 - `{"kind":"ailabel","in":…,"out":…,"text":"Made with AI","variant":"generated|modified|basic","dark":false}` = the EU AI label (mandatory, `commercial-craft.md` §0 rule 6); 9:16 bottom of the safe band, 16:9 bottom right; `dark` for light footage. Icons: the European Commission set in `templates/titles/shared/eu-ai-label/` (free to use, do not recolour).
+- `{"kind":"credit","in":…,"out":…,"lines":["Video by <your studio>","example.com"],"dark":true}` = an end credit
+  without a plate, over a calm end frame (the maker's credit on a branded outro): the first line heavy, the rest mono;
+  9:16 centred in the upper band (the app UI sits at the bottom), 16:9 bottom left (mirrors the AI label). Optional
+  `"pos":"boven"` (Dutch for "top", the key stays as in the code): 16:9 top right, 9:16 higher in the upper band — for when
+  a CTA occupies the lower half. `qa-check.sh --titles` counts the `lines` in the reading time.
+- `{"kind":"figure","in":…,"out":…,"num":"55","noemer":"out of 100","label":"…","bron":"<source> · <year>"}` = a key-figure
+  card on paper, left-aligned: a big number with its denominator (`noemer`), one line of meaning (`label`) and a source line
+  (`bron`) underneath. `qa-check.sh --titles` counts `num`/`noemer`/`label`, not `bron`.
+- Plate options: `"bron"` (a small mono source line inside the plate; not counted in the reading time) and `"pos":"onder"`
+  (Dutch for "bottom": 9:16 low, above the app UI; 16:9 bottom centre), so the top of a screen recording stays clear.
+- `"static": true` on a card = fully on screen from frame `in`, no fade-in or rise (only the fade-out at `out`). Use it for
+  the hook on frame 0, which is also the poster frame. With `in: 0` the template does not hide the card first (two GSAP
+  `set`s on time 0 render frame 0 as hidden, `lessons.md` 2026-11-15).
+- **Shape tokens** next to the colour and font tokens in `spec.brand`: `radius`, `shadow`, `vignette` (card edge),
+  `head-weight`, `border`. Default = the house shape; a sober report brand sets e.g. `radius: 6px`, `shadow: none`,
+  `vignette: rgba(0,0,0,0)`. Font tokens are quoted automatically (a family name with a digit, "Source Serif 4", is invalid
+  unquoted in the `font` shorthand and silently falls back to 16 px).
 - `glow` = the moment the accent word lights up amber (the escalation that couldn't be built in pango). Put it on the
   beat in the picture it refers to.
 - `pair` takes optional `labels` (two kickers, default `["YOU TYPED", "IT KNEW"]`); set them for your own copy.
@@ -110,6 +127,20 @@ from the same offsets it hands to `xfade`, then call `render-titles.sh`, then th
 - **Use only the Apache 2.0 parts** of HyperFrames; no catalogue assets under a different licence in client videos.
 
 ## 6. QA (same bar as always, `commercial-craft.md` §2)
+
+**First the layout gate, before rendering:** `scripts/check-titles.sh 916|169 spec.json` (same `FONTS_DIR` as the
+render). It runs `hyperframes check` of the pinned version at ~150–250 moments, including every tween boundary, and fails on:
+text that runs out of its plate or out of frame, two blocks touching (even briefly, during a transition), a font or file
+that doesn't load (404), a JS error, **visible `undefined`/`NaN`/`[object …]`** (a missing field stays inside the plate,
+so the layout pass doesn't see it), and an item `kind` the template doesn't know (the template would silently turn it
+into a full-frame paper card; only checked against the skill's own `916/`/`169/` entries, a production layer has its
+own kinds). `render-titles.sh` runs it by default before every render and stops with exit 6 on a FAIL; `TITLES_CHECK=0`
+skips it. Fully local: measured with all outbound traffic blocked, same verdict (both HyperFrames calls also set
+`HYPERFRAMES_NO_UPDATE_CHECK=1`). Filtered after measuring on 24 real specs: word-against-word overlap inside one
+paragraph (every word is its own inline-block span and plates have line-height 1.08, so the word boxes of lines 1 and 2
+overlap while the glyphs don't; 13/13 false on one production). Contrast isn't measured meaningfully: the overlay is
+transparent and the gate doesn't know the background, so that stays the eye check below.
+After every change to the template: `scripts/test-titles.sh` (every item kind PASS, four broken specs FAIL, both formats).
 
 A strip on the busiest frame per plate, both formats. Check: legible, heavy, with backing; nothing outside the safe band
 (9:16: plates in the upper band); no plate doubling up in a dissolve; the colour of a flat part of the plate

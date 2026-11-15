@@ -3,13 +3,18 @@
 // Content + timing come from the `spec` variable (JSON), written by the montage from its measured xfade offsets.
 // Never copy times by hand. Recipe: reference/titles-hyperframes.md in this skill.
 //
-// spec = { "duration": s, "brand": { optional, tokens from titles.css :root },
+// spec = { "duration": s, "brand": { optional, tokens from titles.css :root, incl. radius/shadow/vignette/head-weight/border },
 //         "fontFaces": [ { "family": "…", "file": "X.ttf", "weight": 700 } ] (optional), "items": [
 //   { "kind": "plate", "in": s, "out": s, "text": "…", "small": false, "glow": s },        // title plate
 //   { "kind": "pair",  "in": s, "out": s, "typed": "…", "knew": "…", "labels": ["A","B"] }, // two-part plate
 //   { "kind": "card",  "in": s, "out": s, "kicker": "…", "head": "…", "panel": "…",          // full-frame paper card
-//     "typewriter": 3.4, "counter": "words", "foot": ["…", "…"] },
+//     "typewriter": 3.4, "counter": "words", "foot": ["…", "…"], "static": false },   // static: fully visible from frame `in`
 //   { "kind": "ailabel", "in": s, "out": s, "text": "Made with AI", "variant": "generated|modified|basic", "dark": false } ] }
+//   { "kind": "credit", "in": s, "out": s, "lines": ["Video by <your studio>", "example.com"], "dark": true }
+//   { "kind": "figure", "in", "out", "num": "55", "noemer": "out of 100", "label": "…", "bron": "Source · …" }   // key-figure card
+//   plate: optional "bron" (small mono source line inside the plate) and "pos": "onder" (plate at the bottom);
+//   credit: "pos": "boven" (16:9 top right). Keys stay as in the original template (noemer = denominator, bron = source).
+//   credit = end credits without a plate on a calm end frame; 9:16 upper band centred, 16:9 bottom left.
 // Text is plain text (it gets escaped). Markup: *word* = accent (<b>), \n = line break.
 // `in`/`out` are absolute seconds; `out` = the moment the element is fully gone.
 window.buildTitles = function () {
@@ -20,7 +25,10 @@ window.buildTitles = function () {
   const v = (window.__hyperframes && window.__hyperframes.getVariables()) || {};
   const spec = JSON.parse(v.spec);
   // brand: { "teal": "#…", "amber": "#…", "paper": "#…", "plate": "rgba(…)", "font-head": "…", … } → CSS variables
-  for (const [k, val] of Object.entries(spec.brand || {})) root.style.setProperty(`--${k}`, val);
+  // always quote font tokens: a family name with a digit ("Source Serif 4") is invalid unquoted in the `font` shorthand,
+  // and the whole rule then silently falls back to 16px (lessons 2026-11-14)
+  const q = (k, val) => (k.startsWith("font-") && !/^["']|,/.test(val)) ? `"${val}"` : val;
+  for (const [k, val] of Object.entries(spec.brand || {})) root.style.setProperty(`--${k}`, q(k, val));
   // custom brand fonts: files are copied into fonts/ by render-titles.sh (FONTS_DIR=<dir>), registered here as @font-face
   for (const f of spec.fontFaces || []) { const ff = new FontFace(f.family, `url("fonts/${f.file}")`, { weight: String(f.weight || "400") }); document.fonts.add(ff); ff.load(); }
   const glow = getComputedStyle(root).getPropertyValue("--glow").trim();   // GSAP does not interpolate var()
@@ -37,8 +45,11 @@ window.buildTitles = function () {
     const id = `i${i}`;
     if (it.kind === "plate" || it.kind === "pair") {
       const p = el("div", `plate ${id}`);
-      if (it.kind === "plate") p.append(el("p", `title${it.small ? " small" : ""}`, words(it.text)));
-      else {
+      if (it.pos === "onder") p.classList.add("onder");               // plate at the bottom, keeping the top of the footage clear
+      if (it.kind === "plate") {
+        p.append(el("p", `title${it.small ? " small" : ""}`, words(it.text)));
+        if (it.bron) p.append(el("p", "bron", esc(it.bron)));       // source line for a number/recording, mono, small
+      } else {
         const [la, lb] = it.labels || ["YOU TYPED", "IT KNEW"];
         p.append(el("div", "kicker", esc(la)), el("p", "quote", `“${fmt(it.typed)}”`), el("hr"),
                  el("div", "kicker", esc(lb)), el("p", "title small", words(it.knew)));
@@ -51,6 +62,34 @@ window.buildTitles = function () {
         .to(sel, { opacity: 0, duration: f, ease: "none" }, it.out - f);
       // escalation: the accent word glows at a chosen moment (e.g. when the picture 'switches on')
       if (it.glow != null) tl.to(`${sel} b`, { color: glow, textShadow: `0 0 28px ${glow}`, duration: 0.5, ease: "power2.out" }, it.glow);
+      return;
+    }
+
+    if (it.kind === "figure") {
+      // key-figure card: a big number with its denominator, one line of meaning, the source below. Left-aligned, on paper.
+      const c = el("section", `figure ${id}`);
+      c.append(el("div", "num", `${esc(it.num)}<span class="noemer">${esc(it.noemer || "")}</span>`));
+      if (it.label) c.append(el("p", "label", fmt(it.label)));
+      if (it.bron) c.append(el("p", "bron", esc(it.bron)));
+      root.append(c);
+      const sel = `.${id}`, f = it.fade ?? 0.3;
+      tl.set(sel, { opacity: 0 }, 0).to(sel, { opacity: 1, duration: f, ease: "none" }, it.in)
+        .from(`${sel} .num`, { y: 24, opacity: 0, duration: 0.5, ease: "power2.out" }, it.in + 0.05)
+        .from(`${sel} .label`, { y: 16, opacity: 0, duration: 0.45, ease: "power2.out" }, it.in + 0.35)
+        .from(`${sel} .bron`, { opacity: 0, duration: 0.4, ease: "none" }, it.in + 0.6)
+        .to(sel, { opacity: 0, duration: f, ease: "none" }, it.out - f);
+      return;
+    }
+
+    if (it.kind === "credit") {
+      // end credits: 1–3 short lines, the first heavy, the rest mono (e.g. the URL); "dark": true on a light frame
+      const c = el("div", `credit ${id}${it.dark ? " dark" : ""}${it.pos === "boven" ? " boven" : ""}`);
+      (it.lines || []).forEach((t) => c.append(el("p", "", fmt(t))));
+      root.append(c);
+      const sel = `.${id}`, f = it.fade ?? 0.3;
+      tl.set(sel, { opacity: 0 }, 0)
+        .fromTo(sel, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: f, ease: "power2.out" }, it.in)
+        .to(sel, { opacity: 0, duration: f, ease: "none" }, it.out - f);
       return;
     }
 
@@ -87,10 +126,16 @@ window.buildTitles = function () {
     root.append(c);
 
     const sel = `.${id}`, f = it.fade ?? 0.4;
-    tl.set(sel, { opacity: 0 }, 0)
-      .to(sel, { opacity: 1, duration: f, ease: "none" }, it.in)
-      .from(`${sel} .head`, { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, it.in + 0.1)
-      .to(sel, { opacity: 0, duration: f, ease: "none" }, it.out - f);
+    if (it.static) {   // "static": true = fully there from frame `in` (e.g. the hook on frame 0, which is also the poster)
+      // in = 0: don't hide first. Two sets at time 0 make GSAP render frame 0 as "hidden" (measured 2026-11-15)
+      if (it.in > 0) tl.set(sel, { opacity: 0 }, 0).set(sel, { opacity: 1 }, it.in);
+      tl.to(sel, { opacity: 0, duration: f, ease: "none" }, it.out - f);
+    } else {
+      tl.set(sel, { opacity: 0 }, 0)
+        .to(sel, { opacity: 1, duration: f, ease: "none" }, it.in)
+        .from(`${sel} .head`, { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" }, it.in + 0.1)
+        .to(sel, { opacity: 0, duration: f, ease: "none" }, it.out - f);
+    }
     if (tw) {
       // typewriter: word by word, the cursor follows (each word has its own absolutely positioned cursor)
       const pws = c.querySelectorAll(".pw"), curs = c.querySelectorAll(".cur"), n = c.querySelector(".n");

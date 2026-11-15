@@ -7,7 +7,7 @@
 #     916 / 169   the skill template (templates/titles/916 = 1080×1920, 169 = 1920×1080); or your own entry dir
 #     spec.json   {"duration": s, "items": [...]}  — times from the measured montage offsets, never by hand
 #     fps         default 24 (same as the montage)
-# Exit 0 = the MOV exists, has alpha and the right duration. Otherwise ≠ 0 with a reason.
+# Exit 0 = the MOV exists, has alpha and the right duration. Otherwise ≠ 0 with a reason (6 = layout gate check-titles.sh fails).
 #
 # Fixed, not optional: pinned HyperFrames version, --no-browser-gpu (980/980 frames bit-identical across two
 # machines; with GPU, edge pixels drift by up to 4/255), telemetry off, and a timeout (headless Chrome can hang).
@@ -24,7 +24,11 @@ jq -e '.duration > 0 and (.items | length) > 0' "$SPEC" >/dev/null || { echo "ER
 NODE_MAJOR=$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0)
 [ "$NODE_MAJOR" -ge 22 ] || { echo "ERROR: node $(node -v 2>/dev/null) in PATH, HyperFrames needs ≥ 22 (put a newer node earlier in PATH)" >&2; exit 3; }
 
-export HYPERFRAMES_NO_TELEMETRY=1
+export HYPERFRAMES_NO_TELEMETRY=1 HYPERFRAMES_NO_UPDATE_CHECK=1   # no telemetry, no version ping to npm
+# layout gate before the render (check-titles.sh: overflow, overlap, font 404, "undefined", unknown kind). Off: TITLES_CHECK=0
+if [ "${TITLES_CHECK:-1}" != 0 ]; then
+  "$(dirname "$0")/check-titles.sh" "$DIR" "$SPEC" || { echo "ERROR: the title spec fails the layout gate (see above); render skipped" >&2; exit 6; }
+fi
 DUR=$(jq -r .duration "$SPEC")
 WORK=$(mktemp -d); trap 'rm -rf "$WORK"' EXIT
 # copy the entry (following symlinks) so data-duration can be set per production without touching the template

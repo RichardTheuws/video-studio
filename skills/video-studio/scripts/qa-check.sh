@@ -8,13 +8,17 @@
 #     --clips <dir>       individual shots: measure dead cuts (motion energy) --social                 messenger-shareable: ≤ 16 MB, −14 LUFS
 #     --lufs <target>     loudness target (default −16; --social sets −14)   --genre teaser|explainer mean shot length < 3.0 s for a teaser
 #     --titles <spec.json> reading time per title from the HyperFrames spec: ≥ max(1.5 s; characters ÷ 15) (scenario.md S-A05)
+#     --beats <music>[@offset]  MEASURES (not a gate) for each cut from --cuts the distance to the nearest beat, in frames;
+#                         offset = where the bed starts in the film (s, default 0). Beats from the bare bed, not the mix
+#                         (ticks/stings are no beat). Cutting on the beat is style without a measured effect (scenario.md),
+#                         so this is the honest note from commercial-craft.md §7 point 5, not a PASS/FAIL.
 #   Exit 0 = every check PASS. Every FAIL names the measurement and the rule it comes from.
 set -uo pipefail
-F="${1:?usage: qa-check.sh <deliverable.mp4> [--expect s] [--cuts f] [--clips dir] [--social] [--lufs n] [--genre teaser|explainer] [--titles spec.json]}"; shift
-EXPECT=""; CUTS=""; CLIPS=""; TITLES=""; SOCIAL=0; LUFS=-16; LUFS_SET=0; GENRE="explainer"
+F="${1:?usage: qa-check.sh <deliverable.mp4> [--expect s] [--cuts f] [--clips dir] [--social] [--lufs n] [--genre teaser|explainer] [--titles spec.json] [--beats music.wav[@offset]]}"; shift
+EXPECT=""; CUTS=""; CLIPS=""; TITLES=""; BEATS=""; SOCIAL=0; LUFS=-16; LUFS_SET=0; GENRE="explainer"
 while [ $# -gt 0 ]; do case "$1" in
   --expect) EXPECT="${2:?--expect needs a value}"; shift 2;; --cuts) CUTS="${2:?--cuts needs a file}"; shift 2;; --clips) CLIPS="${2:?--clips needs a dir}"; shift 2;;
-  --social) SOCIAL=1; shift;; --lufs) LUFS="${2:?--lufs needs a value}"; LUFS_SET=1; shift 2;; --genre) GENRE="${2:?--genre needs a value}"; shift 2;; --titles) TITLES="${2:?--titles needs a spec.json}"; shift 2;;
+  --social) SOCIAL=1; shift;; --lufs) LUFS="${2:?--lufs needs a value}"; LUFS_SET=1; shift 2;; --genre) GENRE="${2:?--genre needs a value}"; shift 2;; --titles) TITLES="${2:?--titles needs a spec.json}"; shift 2;; --beats) BEATS="${2:?--beats needs an audio file}"; shift 2;;
   *) echo "unknown option $1" >&2; exit 2;; esac; done
 [ "$SOCIAL" = 1 ] && [ "$LUFS_SET" = 0 ] && LUFS=-14   # --social implies −14 unless --lufs was given explicitly
 [ -f "$F" ] || { echo "ERROR: $F does not exist" >&2; exit 2; }
@@ -75,9 +79,10 @@ except Exception as e:
 bad = []; n = 0
 for i, it in enumerate(items):
     if it.get("kind") == "ailabel": continue            # legal label, not reading text
-    parts = [it.get(k) for k in ("kicker", "head", "text", "typed", "knew")]
-    foot = it.get("foot") or []
-    parts += foot if isinstance(foot, list) else [foot]
+    parts = [it.get(k) for k in ("kicker", "head", "text", "typed", "knew", "num", "noemer", "label")]   # "bron" doesn't count: metadata, not reading text
+    for k in ("foot", "lines"):                          # card foot and credit lines count
+        v = it.get(k) or []
+        parts += v if isinstance(v, list) else [v]
     txt = " ".join(str(p) for p in parts if p).replace("*", "").replace("\n", " ")
     chars = len(" ".join(txt.split()))
     if not chars or "in" not in it or "out" not in it: continue
@@ -88,6 +93,37 @@ print("OK %d" % n if not bad else "BAD " + "; ".join(bad))
 PY
 )
     case "$LT" in OK*) pass "reading time" "${LT#OK } titles ≥ chars÷15 and ≥ 1.5 s";; ERR*) failm "reading time" "${LT#ERR }";; *) failm "reading time" "${LT#BAD } — hold longer or shorten the line (scenario.md S-A05)";; esac
+  fi
+fi
+# 8b. beat distance of the cuts (a measurement, not a gate — see header). Engine: `hyperframes beats` of the pinned version, local.
+if [ -n "$BEATS" ]; then
+  BF="${BEATS%@*}"; BOFF=0; [ "$BF" != "$BEATS" ] && BOFF="${BEATS##*@}"
+  if [ ! -f "$BF" ]; then failm beats "music $BF does not exist"
+  elif [ -z "$CUTS" ] || [ ! -f "$CUTS" ]; then failm beats "--beats needs --cuts (the cut points)"
+  else
+    BW=$(mktemp -d); cp "$BF" "$BW/"; BN=$(basename "$BF"); BD=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$BF")
+    printf '<!doctype html><html><body><div id="root" data-composition-id="main" data-start="0" data-duration="%s" data-width="1920" data-height="1080"><audio id="music" data-timeline-role="music" src="%s" data-start="0" data-duration="%s" data-track-index="0"></audio></div></body></html>' "$BD" "$BN" "$BD" > "$BW/index.html"
+    ( cd "$BW" && HYPERFRAMES_NO_TELEMETRY=1 HYPERFRAMES_NO_UPDATE_CHECK=1 npx --yes hyperframes@0.8.99 beats . --json >/dev/null 2>&1 )
+    BJ=$(ls "$BW"/beats/*.json 2>/dev/null | head -1)
+    if [ -z "$BJ" ]; then failm beats "beat detection returned nothing (node ≥ 22 in PATH?)"
+    else
+      FPSN=$(awk -F/ -v r="$FPS" 'BEGIN{split(r,a,"/"); printf "%.3f", (a[2]?a[1]/a[2]:a[1])}')
+      BT=$(python3 -I - "$BJ" "$CUTS" "$BOFF" "$FPSN" <<'PY'
+import json, sys
+bj, cuts, off, fps = sys.argv[1], sys.argv[2], float(sys.argv[3]), float(sys.argv[4])
+b = [x["time"] + off for x in json.load(open(bj))["beats"]]
+lens = [float(l) for l in open(cuts) if l.strip()]
+pts, t = [], 0.0
+for l in lens: t += l; pts.append(t)
+if not b: print("no beats found"); sys.exit(0)
+fr = [round(min(abs(p - x) for x in b) * fps, 1) for p in pts]
+gaps = sorted(b[i+1] - b[i] for i in range(len(b) - 1)); bpm = 60 / gaps[len(gaps)//2] if gaps else 0
+print("%d/%d cuts ≤ 2 frames from a beat (~%d BPM) — per cut: %s frames" % (sum(f <= 2 for f in fr), len(fr), round(bpm), ", ".join("%g" % f for f in fr)))
+PY
+)
+      printf '  INFO  %-18s %s\n' beats "$BT"
+    fi
+    rm -rf "$BW"
   fi
 fi
 # 9. AI label in the metadata (EU AI Act art. 50): the visible label on the end card is a visual check; this is the machine-readable half

@@ -1,0 +1,10 @@
+{ "duration": 26, "items": [
+  { "kind": "plate", "in": 0.3, "out": 3.0, "text": "A plate without *pos*.", "glow": 1.5 },
+  { "kind": "plate", "in": 3.2, "out": 6.0, "text": "A plate at the bottom, with a source.", "bron": "Source · measurement 2026", "pos": "onder" },
+  { "kind": "pair",  "in": 6.2, "out": 9.0, "typed": "LinkedIn", "knew": "Plays without sound." },
+  { "kind": "card",  "in": 9.2, "out": 14.0, "kicker": "TEST · CARD", "head": "This is all\nI typed.", "panel": "make a short video about the brain", "typewriter": 2.0, "counter": "words", "foot": ["Production cost: $5.92", "example.com"] },
+  { "kind": "figure", "in": 14.2, "out": 18.0, "num": "55", "noemer": "out of 100", "label": "ask *ChatGPT* first", "bron": "Source · example" },
+  { "kind": "card",  "in": 18.2, "out": 21.0, "head": "A *static* card", "static": true },
+  { "kind": "credit", "in": 21.2, "out": 25.6, "lines": ["Video by your studio", "example.com"] },
+  { "kind": "ailabel", "in": 21.2, "out": 25.6, "text": "Made with AI" }
+] }
