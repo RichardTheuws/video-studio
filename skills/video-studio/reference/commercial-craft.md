@@ -98,6 +98,7 @@ Thin text on moving footage reads "thin" and cheap. Premium titles are **heavy, 
 - [ ] Hero breathes; rhythm follows the music; hook in the first 1.5s.
 - [ ] Audio loudnorm + duck + (J/L) flow; music fits the brand/goal.
 - [ ] Logo/branding intentional (slots), end card with CTA/contact.
+- [ ] Story, legibility and voice: `story-check.py` (already at the storyboard), `legibility-check.py`, `voice-check.py` all three PASS (SKILL §5). A technically green video that doesn't run as a story, with a voice with an accent, or with plates half typed out when the picture changes, is not finished.
 - [ ] Does it feel worth paying for? If not: name what's wrong and fix it, don't ship an "almost".
 
 ---

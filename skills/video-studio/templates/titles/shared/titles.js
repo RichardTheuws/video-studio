@@ -15,6 +15,8 @@
 //   plate: optional "bron" (small mono source line inside the plate) and "pos": "onder" (plate at the bottom);
 //   credit: "pos": "boven" (16:9 top right). Keys stay as in the original template (noemer = denominator, bron = source).
 //   credit = end credits without a plate on a calm end frame; 9:16 upper band centred, 16:9 bottom left.
+//   { "kind": "sub", "in": s, "out": s, "text": "line 1\nline 2" }   // subtitle (Extended, reference/extended.md): from the script,
+//   bottom centre above the safe band, no animation (hard in/out on the speech), max. 2 lines; never together with a plate "onder"
 // Text is plain text (it gets escaped). Markup: *word* = accent (<b>), \n = line break.
 // `in`/`out` are absolute seconds; `out` = the moment the element is fully gone.
 window.buildTitles = function () {
@@ -90,6 +92,14 @@ window.buildTitles = function () {
       tl.set(sel, { opacity: 0 }, 0)
         .fromTo(sel, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: f, ease: "power2.out" }, it.in)
         .to(sel, { opacity: 0, duration: f, ease: "none" }, it.out - f);
+      return;
+    }
+
+    if (it.kind === "sub") {
+      // subtitle: plain text (no *accent*), hard in/out so it sits exactly on the speech; a black box keeps it readable on any picture
+      const s = el("div", `sub ${id}`); s.append(el("p", "", esc(it.text).replace(/\n/g, "<br>")));
+      root.append(s);
+      tl.set(`.${id}`, { opacity: 0 }, 0).set(`.${id}`, { opacity: 1 }, it.in).set(`.${id}`, { opacity: 0 }, it.out);
       return;
     }
 

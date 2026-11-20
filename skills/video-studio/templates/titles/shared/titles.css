@@ -97,3 +97,13 @@ html, body { overflow: hidden; background: transparent; }
 /* ── credit top right (16:9: a mid-film CTA, scenario.md S-PR07) ── */
 .landscape .credit.boven { left: auto; right: 72px; bottom: auto; top: 56px; text-align: right; }
 .portrait .credit.boven { top: 140px; }
+
+/* ── subtitle (sub, Extended): bottom centre, max. 2 lines, black box at 80%. 9:16 above the app UI and the AI label;
+   16:9 above the AI label (bottom right). Readable on white (screen recordings of documents) and on dark footage. ── */
+.sub { position: absolute; left: 60px; right: 60px; opacity: 0; display: flex; justify-content: center; pointer-events: none; }
+.sub p { background: rgba(0,0,0,0.80); color: #fff; font: 600 44px/1.28 var(--font-ui); padding: 10px 22px 12px; border-radius: 6px;
+  text-align: center; white-space: pre; max-width: 100%; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+/* white-space: pre — only the line breaks from the spec; the browser never wraps by itself (2 lines became 4 in QA),
+   and a line that is too long runs out of frame and so gets caught by the layout gate (check-titles.sh). Max. 42 chars per line. */
+.landscape .sub { bottom: 120px; }
+.portrait .sub { bottom: 420px; } .portrait .sub p { font-size: 44px; }   /* 42 characters ≈ 980 px: fits within 1080 */

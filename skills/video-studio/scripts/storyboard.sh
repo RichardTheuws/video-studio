@@ -14,6 +14,12 @@
 # prompts.txt — one beat per line:  SECTION|LABEL|prompt
 #   SECTION ∈ {LEADER, CONTENT, OUTRO}   (default split 3/5/2, but free)
 #   lines starting with # or empty are ignored
+#   REAL IMAGE: a prompt that starts with @ is an existing photo, not a generation:
+#     CONTENT|The product|@/path/to/source/p04.webp :: product; slow push-in, steam only
+#   The photo is shown whole on the format (the border is a blurred copy of the same photo); everything after " :: "
+#   is the motion note for production. Kind 'logo' goes on a plain dark card (#151515) instead of the blurred border.
+#   A real video fragment: @/path/v01.mp4#t=12.5,16.0 :: product; … → the board shows the middle frame.
+#   A real photo never becomes the auto-anchor for AI frames (otherwise the AI redraws the product).
 #   example:
 #     LEADER|Logo reveal|dark studio, brand periwinkle glow, no text, cinematic
 #     CONTENT|Product hero|clean SaaS dashboard on desk, warm key light, no text
@@ -46,8 +52,8 @@ done
 
 # ── preflight (iron rule: never degrade silently) ──────────────────────────────
 need() { command -v "$1" >/dev/null 2>&1 || { echo "✗ '$1' is missing — STOP and ask (A/B/C: install / other route / cancel)." >&2; exit 1; }; }
-need nano-banana
-[ "$MAKE_BOARD" -eq 1 ] && need magick
+grep -v '^[[:space:]]*#' "${PROMPTS:-/dev/null}" 2>/dev/null | cut -d'|' -f3- | grep -qv '^@' && need nano-banana
+need magick   # also for real-image beats
 [ -n "$PROMPTS" ] && [ -f "$PROMPTS" ] || { echo "✗ prompts file missing: '$PROMPTS'" >&2; usage 1; }
 
 mkdir -p "$OUT"
@@ -58,8 +64,23 @@ unit() { case "$TIER/$SIZE" in
   pro/1K)    echo 0.134;; pro/2K)   echo 0.201;; pro/4K)   echo 0.302;;
   *) echo 0.067;; esac; }
 
+# ── a real photo as a frame ────────────────────────────────────────────────────
+# Long side 1376 (like nano-banana 1K). The whole photo stays visible; the border is the same photo, blurred.
+frame_wh() { case "$ASPECT" in
+  16:9) echo "1376 768";; 9:16) echo "768 1376";; 1:1) echo "1024 1024";;
+  4:5) echo "1100 1376";; 4:3) echo "1376 1032";; 3:4) echo "1032 1376";; *) echo "1376 768";; esac; }
+real_frame() { # src out [kind]
+  read -r W H <<< "$(frame_wh)"
+  if [ "${3:-}" = "logo" ]; then  # a logo (often transparent): a plain dark card, never a blurred copy of itself
+    magick -size "${W}x${H}" xc:'#151515' \( "$1[0]" -background none -resize "$((W*62/100))x$((H*55/100))" \) \
+      -gravity center -composite -quality 92 "$2"; return
+  fi
+  magick "$1[0]" -auto-orient -resize "${W}x${H}^" -gravity center -extent "${W}x${H}" -blur 0x30 -modulate 55 \
+    \( "$1[0]" -auto-orient -resize "${W}x${H}" \) -gravity center -composite -quality 92 "$2"
+}
+
 # ── generate per beat ──────────────────────────────────────────────────────────
-n=0; frames=(); labels=()
+n=0; ai=0; frames=(); labels=()
 while IFS='|' read -r section label prompt || [ -n "${section:-}" ]; do
   case "$section" in ''|\#*) continue;; esac
   [ -n "${prompt:-}" ] || continue
@@ -72,9 +93,25 @@ while IFS='|' read -r section label prompt || [ -n "${section:-}" ]; do
   [ -n "$ANCHOR" ] && ref_args=(-r "$ANCHOR")
 
   echo "→ [$idx] ${section} — ${label}"
+  if [ "${prompt#@}" != "$prompt" ]; then
+    src="${prompt#@}"; src="${src%% :: *}"
+    if [ "${src#*#t=}" != "$src" ]; then  # a real video fragment: a frame from the middle of the fragment
+      vt="${src#*#t=}"; vsrc="${src%%#t=*}"
+      [ -f "$vsrc" ] || { echo "✗ real video missing: $vsrc ($name)" >&2; exit 1; }
+      mid=$(awk -v a="${vt%%,*}" -v b="${vt#*,}" 'BEGIN{printf "%.2f", (a+b)/2}')
+      ffmpeg -v error -y -ss "$mid" -i "$vsrc" -frames:v 1 "$OUT/$name-src.png" || { echo "✗ could not grab a frame: $vsrc@$mid" >&2; exit 1; }
+      src="$OUT/$name-src.png"
+    fi
+    [ -f "$src" ] || { echo "✗ real photo missing: $src ($name)" >&2; exit 1; }
+    kind="${prompt#* :: }"; [ "$kind" = "$prompt" ] && kind=""; kind="${kind%%;*}"; kind="${kind// /}"
+    real_frame "$src" "$OUT/$name.jpeg" "$kind" || { echo "✗ could not process the real photo: $src" >&2; exit 1; }
+    frames+=("$OUT/$name.jpeg"); labels+=("${section} · ${label}")
+    continue
+  fi
   # generation is flaky (rate limits / transient API errors) → up to 3 attempts per
   # keyframe with a short backoff; only then fail hard (a single attempt has been
   # seen to drop a keyframe silently).
+  ai=$((ai+1))
   frame=""
   for attempt in 1 2 3; do
     nano-banana "$prompt" -o "$name" -d "$OUT" -m "$TIER" -s "$SIZE" -a "$ASPECT" "${ref_args[@]+"${ref_args[@]}"}" >/dev/null || true
@@ -96,7 +133,7 @@ done < "$PROMPTS"
 
 # ── cost line ──────────────────────────────────────────────────────────────────
 U=$(unit)
-awk -v n="$n" -v u="$U" -v t="$TIER" -v s="$SIZE" 'BEGIN{
+awk -v n="$ai" -v u="$U" -v t="$TIER" -v s="$SIZE" 'BEGIN{
   usd=n*u; eur=usd*0.92;
   printf "\n💶 Storyboard cost: ~$%.2f (%d × $%.3f, %s/%s) ≈ €%.2f — stills only, i2v comes only after approval.\n", usd, n, u, t, s, eur }'
 

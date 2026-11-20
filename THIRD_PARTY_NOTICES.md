@@ -12,3 +12,8 @@ work offline and stay frame-identical across machines. They keep their own licen
 
 [HyperFrames](https://github.com/heygen-com/hyperframes) (Apache 2.0) is not bundled; `render-titles.sh` runs a pinned
 version through `npx`.
+
+The optional voice-over chain (`skills/video-studio/scripts/vo/`) uses [Chatterbox](https://github.com/resemble-ai/chatterbox)
+(MIT), [mlx-whisper](https://github.com/ml-explore/mlx-examples) (MIT), librosa (ISC) and SciPy (BSD) from your own Python
+environment; none of them is bundled. **No reference voice is bundled either**: you supply one you have the rights to
+(see `skills/video-studio/reference/extended.md` §3).

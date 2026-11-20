@@ -15,3 +15,7 @@ scratch/
 .idea/
 .vscode/
 *.swp
+
+# Your own reference voice for the VO chain (never committed; see skills/video-studio/reference/extended.md §3)
+skills/video-studio/assets/voice/
+__pycache__/

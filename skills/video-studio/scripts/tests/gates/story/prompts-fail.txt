@@ -1,0 +1,4 @@
+LEADER|Studio|dark film studio, camera on a tripod, moody light
+CONTENT|Desk|editing desk with two monitors, dark room
+CONTENT|Screen|timeline on a monitor, close-up
+OUTRO|Logo|logo on a black card

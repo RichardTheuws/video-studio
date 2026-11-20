@@ -22,6 +22,13 @@ Turn the text storyboard into one prompts file, one beat per line: `SECTION|LABE
 - Adopt the brand canon (color hex, tone) from the brand's kit — never guess (`brand-intake.md` §2).
 - Every content beat is a **proof shot** for its line (`existing-footage.md` §3, `lessons.md`).
 - **Draw the peak keyframe first** (`scenario.md` S-A01/S-A02): the one image a viewer retells, usually also the hardest to get right. Board order ≠ edit order. Put the brief's tags (`taxonomy.md`) at the top of `prompts.txt` as `#` comments; `storyboard.sh` skips them.
+- **Real images where they exist.** A beat whose prompt starts with `@` is an existing photo, nothing is generated:
+  `CONTENT|The product|@/path/p04.webp :: product; slow push-in` (the photo whole on the format, the border a blurred copy of
+  it; kind `logo` on a plain dark card). A real video fragment: `@/path/v01.mp4#t=12.5,16.0 :: product; …` (the board shows the
+  middle frame, production cuts the fragment instead of image-to-video). The product, people, vehicles, the premises,
+  reviews and the logo always come from a real photo when the client has one: an AI board drew a round kettle and a sink
+  where the client's actual product belonged. A real photo never becomes the auto-anchor for AI frames, and the cost line
+  only counts generated frames.
 
 ```
 # prompts.txt — example (16:9, brand periwinkle #627CB6)

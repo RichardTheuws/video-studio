@@ -1,0 +1,3 @@
+CONTENT|Report|@report-top.png :: screen; slow scroll
+CONTENT|Score|@report-score.png :: screen; frame highlights
+OUTRO|Call|@endcard.png :: logo

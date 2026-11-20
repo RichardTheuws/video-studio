@@ -1,0 +1,17 @@
+{
+  "_about": "Approved voices per language, read by scripts/voice-check.py. Empty on purpose: the skill ships no voice. A voice goes on this list only after a listening test by a person who knows the language and a measurement (language ID + word error rate with voice-check.py). Never pick a voice by model default: a multilingual TTS model with an English-speaking stock voice gave a Dutch script a heavy English accent, and whisper language ID did not see it (nl 0.976–0.998 measured on that voice) — this list is the real gate. Always disclose an AI voice (metadata + on-screen text, EU AI Act art. 50). Fields per AI voice: id, name, engine, engine_match (regex on the manifest's engine), anchor_sha256 (sha256 of the reference audio the clone was made from; `shasum -a 256 <file>`), voice_id (alternative to the sha for hosted voices), credit (the line for metadata/credits), metadata_core (a word the master's metadata comment must contain, e.g. the reference voice's name), approved (who and when).",
+  "_example_ai_voice": {
+    "id": "house-voice-a",
+    "name": "House voice A (example)",
+    "engine": "chatterbox",
+    "engine_match": "(?i)chatterbox",
+    "anchor_sha256": "<sha256 of assets/voice/anchor.wav>",
+    "credit": "AI voice (Chatterbox multilingual, MIT), reference voice <name and licence>",
+    "metadata_core": "<reference voice name>",
+    "approved": "<who, date, listening test>"
+  },
+  "en": [],
+  "nl": [],
+  "_about_real_voices": "Optional exception: a real recording of a person (not an AI voice) who consented to that specific production. Manifest engine 'real' + voice_id; voice-check.py passes it only when the manifest sits in a folder listed in `only_for`, so one consent never leaks into other productions. Fields: id, name, lang, engine_match, only_for (list of production folders), source (who decided, when, for what), metadata_core (e.g. 'real recording'), credit.",
+  "real_voices": []
+}

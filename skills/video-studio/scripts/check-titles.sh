@@ -23,8 +23,8 @@ jq -e '.duration > 0 and (.items | length) > 0' "$SPEC" >/dev/null || { echo "ER
 # unknown kind: titles.js silently turns it into a full-frame paper card that covers everything (measured 2026-11-15,
 # a production's own spec with extra kinds). Only against the skill template; your own entry may define its own kinds.
 if [ "$DIR" = "$(cd "$(dirname "$0")/../templates/titles" && pwd)/${DIR##*/}" ]; then
-  UNKNOWN=$(jq -r '[.items[].kind | select(IN("plate","pair","card","figure","credit","ailabel") | not)] | unique | join(", ")' "$SPEC")
-  [ -n "$UNKNOWN" ] && { echo "── check-titles: $SPEC"; echo "  FAIL  unknown kind: $UNKNOWN (the template knows plate, pair, card, figure, credit, ailabel)"; echo "QA: FAIL"; exit 1; }
+  UNKNOWN=$(jq -r '[.items[].kind | select(IN("plate","pair","card","figure","credit","ailabel","sub") | not)] | unique | join(", ")' "$SPEC")
+  [ -n "$UNKNOWN" ] && { echo "── check-titles: $SPEC"; echo "  FAIL  unknown kind: $UNKNOWN (the template knows plate, pair, card, figure, credit, ailabel, sub)"; echo "QA: FAIL"; exit 1; }
 fi
 NODE_MAJOR=$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0)
 [ "$NODE_MAJOR" -ge 22 ] || { echo "ERROR: node $(node -v 2>/dev/null) in PATH, HyperFrames needs ≥ 22 (put a newer node earlier in PATH)" >&2; exit 3; }

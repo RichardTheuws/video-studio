@@ -66,6 +66,10 @@ guide and paste it into the spec. Look at one test render per format before the 
   A plate must be gone **before** a dissolve (plates double up in a dissolve, `lessons.md` 2026-10-14 II).
 - Text is **plain text** and gets escaped (`& < > ' “ ”` are safe). Markup: `*word*` = accent, `\n` = line break.
 - `{"kind":"ailabel","in":…,"out":…,"text":"Made with AI","variant":"generated|modified|basic","dark":false}` = the EU AI label (mandatory, `commercial-craft.md` §0 rule 6); 9:16 bottom of the safe band, 16:9 bottom right; `dark` for light footage. Icons: the European Commission set in `templates/titles/shared/eu-ai-label/` (free to use, do not recolour).
+- `{"kind":"sub","in":…,"out":…,"text":"line 1\nline 2"}` = a subtitle (Extended, `extended.md` §4): bottom centre in a
+  fixed band, black box at 80%, no animation (hard in/out on the speech), `white-space: pre` so only your line breaks count
+  (≤ 2 lines, ≤ 42 characters); never together with a plate `"pos":"onder"`. `scripts/vo/subs.py` writes these items from the
+  measured VO; `qa-check.sh --titles` holds them to 17 characters/s (min. 1.0 s).
 - `{"kind":"credit","in":…,"out":…,"lines":["Video by <your studio>","example.com"],"dark":true}` = an end credit
   without a plate, over a calm end frame (the maker's credit on a branded outro): the first line heavy, the rest mono;
   9:16 centred in the upper band (the app UI sits at the bottom), 16:9 bottom left (mirrors the AI label). Optional

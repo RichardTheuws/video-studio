@@ -89,7 +89,8 @@ Measured on a 19 s 1080p master (Apple Silicon, ffmpeg 8.1.2), SSIM against the 
 and a master encode of a half-minute film takes seconds anyway. Rules: masters `libx264 -preset slow -crf 18`
 (social: crf 25–26, see "Encode and delivery" below); previews, QA strips and intermediates `-preset veryfast -crf 20`. End every
 graph with `setparams=colorspace=bt709:color_trc=bt709:color_primaries=bt709:range=tv` and put
-`-metadata comment="AI-generated imagery — <brand>, EU AI Act art. 50"` on every master that contains AI imagery or audio
+`-metadata comment="AI-generated imagery — <brand>, EU AI Act art. 50"` on every master that contains AI imagery or audio;
+with an AI voice `"AI-generated imagery and voice — <brand> (<credit from voices.json>), EU AI Act art. 50"` (`voice-check.py --master`)
 (`scripts/qa-check.sh` checks both). ffmpeg 9.0.2: xfade+settb, the ProRes 4444 overlay, tblend/signalstats, ebur128 and
 pango→magick→overlay were all re-tested after the upgrade — no change.
 

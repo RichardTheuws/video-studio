@@ -1,0 +1,7 @@
+{ "duration": 9, "items": [
+  { "kind": "plate", "in": 0.3, "out": 3.0, "text": "02 · Where you stand", "bron": "sample report · scan 2026" },
+  { "kind": "ailabel", "in": 0.3, "out": 4.0, "text": "Made with AI, voice included" },
+  { "kind": "sub", "in": 0.4, "out": 2.6, "text": "At the top you see three counts.\nCan AI read your site?" },
+  { "kind": "sub", "in": 2.6, "out": 5.2, "text": "Eight out of eight checks are fine." },
+  { "kind": "sub", "in": 5.4, "out": 8.6, "text": "Does AI name you? In nine of the\nninety-six answers." }
+] }

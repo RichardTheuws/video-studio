@@ -1,0 +1,5 @@
+{"duration": 20, "items": [
+ {"kind": "plate", "in": 0.5, "out": 3.5, "text": "One question, one answer"},
+ {"kind": "plate", "in": 8.0, "out": 11.0, "text": "02 · Where you stand"},
+ {"kind": "plate", "in": 15.0, "out": 18.0, "text": "Run your own scan"}
+]}

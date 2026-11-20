@@ -12,13 +12,20 @@
 #                         offset = where the bed starts in the film (s, default 0). Beats from the bare bed, not the mix
 #                         (ticks/stings are no beat). Cutting on the beat is style without a measured effect (scenario.md),
 #                         so this is the honest note from commercial-craft.md §7 point 5, not a PASS/FAIL.
+#     --bed <bed.wav>     GATE: audible clicks in the music bed as it goes into the mix (≤ 200/min, scripts/vo/clean.py --bed)
+#     --length <min-max>  the duration must fall inside the band (Extended: 45-90, reference/extended.md; 90 s is a hard cap)
+#     --srt <file.srt>    subtitles (Extended): ≤ 2 lines, ≤ 42 characters/line, ≥ 1.0 s, ≤ 17 characters/s, no overlap, and SYNC:
+#                         mlx-whisper on the audio track, first word per cue within ±0.6 s, median ≤ 0.25 s, ≥ 80% found.
+#                         No mlx-whisper = FAIL (never skipped silently); structure only: --srt-nosync.
+#                         Language for the sync: env VO_LANG (default en). Python with mlx-whisper: env VS_VO_PY.
 #   Exit 0 = every check PASS. Every FAIL names the measurement and the rule it comes from.
 set -uo pipefail
-F="${1:?usage: qa-check.sh <deliverable.mp4> [--expect s] [--cuts f] [--clips dir] [--social] [--lufs n] [--genre teaser|explainer] [--titles spec.json] [--beats music.wav[@offset]]}"; shift
-EXPECT=""; CUTS=""; CLIPS=""; TITLES=""; BEATS=""; SOCIAL=0; LUFS=-16; LUFS_SET=0; GENRE="explainer"
+F="${1:?usage: qa-check.sh <deliverable.mp4> [--expect s] [--cuts f] [--clips dir] [--social] [--lufs n] [--genre teaser|explainer] [--titles spec.json] [--beats music.wav[@offset]] [--bed bed.wav] [--length min-max] [--srt f.srt] [--srt-nosync]}"; shift
+EXPECT=""; CUTS=""; CLIPS=""; TITLES=""; BEATS=""; BED=""; LENGTH=""; SRT=""; SRTSYNC=1; SOCIAL=0; LUFS=-16; LUFS_SET=0; GENRE="explainer"
 while [ $# -gt 0 ]; do case "$1" in
   --expect) EXPECT="${2:?--expect needs a value}"; shift 2;; --cuts) CUTS="${2:?--cuts needs a file}"; shift 2;; --clips) CLIPS="${2:?--clips needs a dir}"; shift 2;;
   --social) SOCIAL=1; shift;; --lufs) LUFS="${2:?--lufs needs a value}"; LUFS_SET=1; shift 2;; --genre) GENRE="${2:?--genre needs a value}"; shift 2;; --titles) TITLES="${2:?--titles needs a spec.json}"; shift 2;; --beats) BEATS="${2:?--beats needs an audio file}"; shift 2;;
+  --bed) BED="${2:?--bed needs the bed as mixed}"; shift 2;; --length) LENGTH="${2:?--length needs min-max}"; shift 2;; --srt) SRT="${2:?--srt needs a file}"; shift 2;; --srt-nosync) SRTSYNC=0; shift;;
   *) echo "unknown option $1" >&2; exit 2;; esac; done
 [ "$SOCIAL" = 1 ] && [ "$LUFS_SET" = 0 ] && LUFS=-14   # --social implies −14 unless --lufs was given explicitly
 [ -f "$F" ] || { echo "ERROR: $F does not exist" >&2; exit 2; }
@@ -86,7 +93,8 @@ for i, it in enumerate(items):
     txt = " ".join(str(p) for p in parts if p).replace("*", "").replace("\n", " ")
     chars = len(" ".join(txt.split()))
     if not chars or "in" not in it or "out" not in it: continue
-    n += 1; dur = float(it["out"]) - float(it["in"]); need = max(1.5, chars / 15.0)
+    n += 1; dur = float(it["out"]) - float(it["in"])
+    need = max(1.0, chars / 17.0) if it.get("kind") == "sub" else max(1.5, chars / 15.0)   # a subtitle follows the speech: 17 chars/s, min 1.0 s
     if dur + 1e-6 < need:
         bad.append("#%d %s %d chars in %.1fs (needs %.1fs)" % (i, it.get("kind", "?"), chars, dur, need))
 print("OK %d" % n if not bad else "BAD " + "; ".join(bad))
@@ -125,6 +133,74 @@ PY
     fi
     rm -rf "$BW"
   fi
+fi
+# 3b. length band (Extended, reference/extended.md: 45–90 s, 90 is a hard cap)
+if [ -n "$LENGTH" ]; then LMIN=${LENGTH%-*}; LMAX=${LENGTH#*-}
+  awk -v a="$DUR" -v lo="$LMIN" -v hi="$LMAX" 'BEGIN{exit !(a>=lo && a<=hi)}' && pass length "${DUR}s within ${LMIN}–${LMAX} s" || failm length "${DUR}s outside ${LMIN}–${LMAX} s (Extended cap, extended.md §1)"
+fi
+# 8c. subtitles: structure + sync against the real speech (extended.md §4)
+if [ -n "$SRT" ]; then
+  if [ ! -f "$SRT" ]; then failm subtitles "$SRT does not exist"
+  else
+    ST=$(python3 -I - "$SRT" <<'PY'
+import re, sys
+raw = open(sys.argv[1], encoding="utf-8").read().replace("\r", "")
+def t(x): h, m, r = x.split(":"); s, ms = r.split(","); return int(h) * 3600 + int(m) * 60 + int(s) + int(ms) / 1000
+cues, bad = [], []
+for blk in [b for b in raw.strip().split("\n\n") if b.strip()]:
+    ls = blk.strip().split("\n")
+    m = re.match(r"(\d\d:\d\d:\d\d,\d{3}) --> (\d\d:\d\d:\d\d,\d{3})", ls[1] if len(ls) > 1 else "")
+    if not m: bad.append("unreadable cue: %r" % ls[:2]); continue
+    a, b, txt = t(m.group(1)), t(m.group(2)), ls[2:]
+    cues.append((a, b, txt)); chars = len(" ".join(txt)); d = b - a
+    if len(txt) > 2: bad.append("%.1fs: %d lines" % (a, len(txt)))
+    if any(len(l) > 42 for l in txt): bad.append("%.1fs: line > 42 characters" % a)
+    if d < 1.0 - 1e-6: bad.append("%.1fs: %.2f s < 1.0" % (a, d))
+    if chars / max(d, 0.01) > 17.0 + 1e-6: bad.append("%.1fs: %.1f characters/s > 17" % (a, chars / d))
+for (a1, b1, _), (a2, b2, _) in zip(cues, cues[1:]):
+    if a2 < b1 - 1e-6: bad.append("overlap at %.1fs" % a2)
+print(("OK %d cues" % len(cues)) if not bad else "BAD " + "; ".join(bad[:6]))
+PY
+)
+    case "$ST" in OK*) pass subtitles "${ST#OK } — ≤2 lines, ≤42 chars, ≥1.0 s, ≤17 chars/s";; *) failm subtitles "${ST#BAD }";; esac
+    if [ "$SRTSYNC" = 1 ]; then
+      PYW="${VS_VO_PY:-python3}"
+      if ! "$PYW" -c "import mlx_whisper" 2>/dev/null; then failm sync "mlx-whisper not found ($PYW) — set VS_VO_PY (extended.md §5b) or deliberately --srt-nosync"
+      else SY=$("$PYW" -I - "$F" "$SRT" "${VO_LANG:-en}" <<'PY'
+import re, sys, unicodedata, statistics, mlx_whisper
+F, S, LANG = sys.argv[1], sys.argv[2], sys.argv[3]
+norm = lambda w: re.sub(r"[^a-z0-9]", "", unicodedata.normalize("NFKD", w.lower()).encode("ascii", "ignore").decode())
+def t(x): h, m, r = x.split(":"); s, ms = r.split(","); return int(h) * 3600 + int(m) * 60 + int(s) + int(ms) / 1000
+cues = []
+for blk in open(S, encoding="utf-8").read().strip().split("\n\n"):
+    ls = blk.strip().split("\n"); m = re.match(r"(\S+) --> (\S+)", ls[1]); cues.append((t(m.group(1)), " ".join(ls[2:])))
+r = mlx_whisper.transcribe(F, path_or_hf_repo="mlx-community/whisper-large-v3-turbo", language=LANG, word_timestamps=True, temperature=0.0)
+# whisper pulls the pause before the first word after a silence into that word (a word stamped 27.88–29.00 s while the voice
+# starts at 28.78; measured). A word longer than 0.6 s therefore starts at max(start, end − 0.45): the end IS reliable.
+words = [(norm(w["word"]), max(w["start"], w["end"] - 0.45) if w["end"] - w["start"] > 0.6 else w["start"])
+         for seg in r["segments"] for w in seg.get("words", []) if norm(w["word"])]
+found, deltas = 0, []
+for a, txt in cues:
+    # the REAL first word of the cue (also "so", "in", "8"): comparing a later word with the cue start gives a fixed
+    # positive offset (measured: +0.3 to +0.8 s). Found = the nearest match.
+    cw = next((norm(x) for x in txt.split() if norm(x)), "")
+    cand = [ws - a for wn, ws in words if abs(ws - a) <= 1.5 and cw and (wn == cw or (len(cw) >= 5 and wn[:5] == cw[:5]))]
+    best = min(cand, key=abs) if cand else None
+    if best is not None: found += 1; deltas.append(abs(best))
+share = found / max(len(cues), 1); med = statistics.median(deltas) if deltas else 9; mx = max(deltas) if deltas else 9
+ok = share >= 0.8 and med <= 0.25 and mx <= 0.6
+print(("OK " if ok else "BAD ") + "%d/%d cues found in the speech, offset median %.2f s, max %.2f s" % (found, len(cues), med, mx))
+PY
+)
+        case "$SY" in OK*) pass sync "${SY#OK }";; *) failm sync "${SY#BAD } — put the cues on the measured VO times (extended.md §4)";; esac
+      fi
+    fi
+  fi
+fi
+# music bed: audible clicks (a stable-audio bed measured ~2000 clicks per minute; scripts/vo/clean.py)
+if [ -n "$BED" ]; then
+  BR=$("${VS_VO_PY:-python3}" "$(dirname "$0")/vo/clean.py" --bed "$BED" 2>&1 | tail -1)
+  case "$BR" in "BED: PASS"*) pass bed "${BR#BED: PASS — }";; *) failm bed "${BR#BED: FAIL — } — adeclick + lowpass on the bed (extended.md §3)";; esac
 fi
 # 9. AI label in the metadata (EU AI Act art. 50): the visible label on the end card is a visual check; this is the machine-readable half
 CM=$(ffprobe -v error -show_entries format_tags=comment -of csv=p=0 "$F")
